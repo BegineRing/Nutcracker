@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nutcracker — Викторина для детей</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        :root {
+            --bg: #1a2a3a;
+            --card-bg: #2c4054;
+            --gold: #f7c948;
+            --green: #6fcf97;
+            --red: #eb5757;
+            --text: #f0f4fa;
+            --shadow: 0 8px 32px rgba(0,0,0,0.4);
+            --radius: 28px;
+        }
+        body {
+            font-family: 'Segoe UI', 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            overflow: hidden;
+        }
+        #app {
+            max-width: 480px;
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 16px 16px 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            min-height: 600px;
+            max-height: 100vh;
+        }
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            animation: fadeIn 0.5s ease;
+            width: 100%;
+        }
+        .screen.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .mascot {
+            font-size: 72px;
+            line-height: 1;
+            margin-bottom: 2px;
+            transition: transform 0.3s ease;
+            display: inline-block;
+            cursor: pointer;
+            user-select: none;
+        }
+        .mascot.idle {
+            animation: float 3s ease-in-out infinite;
+        }
+        .mascot.happy {
+            animation: bounceHappy 0.6s ease;
+        }
+        .mascot.sad {
+            animation: shakeSad 0.6s ease;
+        }
+        .mascot.celebrate {
+            animation: celebrate 0.8s ease infinite alternate;
+        }
+        .mascot.tumble {
+            animation: tumble 0.8s ease forwards;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        @keyframes bounceHappy {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.4) rotate(-10deg); }
+            60% { transform: scale(0.9) rotate(5deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+        @keyframes shakeSad {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px) rotate(-5deg); }
+            40% { transform: translateX(10px) rotate(5deg); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+        @keyframes celebrate {
+            0% { transform: rotate(-5deg) scale(1); }
+            100% { transform: rotate(5deg) scale(1.1); }
+        }
+        @keyframes tumble {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(-20deg) scale(1.1) translateY(-20px); }
+            50% { transform: rotate(0deg) scale(0.9) translateY(0px); }
+            75% { transform: rotate(20deg) scale(1.1) translateY(-15px); }
+            100% { transform: rotate(0deg) scale(1) translateY(0); }
+        }
+        .title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--gold);
+            text-shadow: 0 4px 12px rgba(247, 201, 72, 0.3);
+            letter-spacing: 1px;
+        }
+        .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: -6px;
+            font-weight: 500;
+        }
+        .nuts-counter {
+            background: rgba(255,255,255,0.08);
+            border-radius: 60px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .nuts-counter span {
+            color: var(--gold);
+        }
+        .btn-start {
+            background: linear-gradient(135deg, var(--gold), #f5a623);
+            border: none;
+            border-radius: 60px;
+            padding: 16px 40px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #1a2a3a;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(247, 201, 72, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 4px;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-start:active {
+            transform: scale(0.94);
+            box-shadow: 0 4px 12px rgba(247, 201, 72, 0.2);
+        }
+        .btn-start::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .btn-start:hover::after {
+            opacity: 1;
+        }
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+        }
+        .progress-dots {
+            display: flex;
+            gap: 8px;
+        }
+        .dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            transition: all 0.3s;
+        }
+        .dot.done {
+            background: var(--green);
+            transform: scale(1.1);
+        }
+        .dot.current {
+            background: var(--gold);
+            box-shadow: 0 0 20px rgba(247, 201, 72, 0.4);
+            transform: scale(1.2);
+        }
+        .btn-tts {
+            background: rgba(255,255,255,0.08);
+            border: none;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-tts:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.9);
+        }
+        .question-area {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            padding: 14px 12px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .question-icon {
+            font-size: 2.8rem;
+            margin-bottom: 4px;
+        }
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            line-height: 1.4;
+            max-width: 90%;
+        }
+        .options {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 2px;
+        }
+        .option-btn {
+            background: rgba(255,255,255,0.06);
+            border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 60px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            backdrop-filter: blur(2px);
+            text-align: left;
+            min-height: 58px;
+            position: relative;
+        }
+        .option-btn:active:not(.disabled) {
+            transform: scale(0.95);
+        }
+        .option-btn .opt-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+            color: var(--gold);
+            font-weight: 700;
+            width: 2.2rem;
+            text-align: center;
+        }
+        .option-btn .opt-label {
+            flex: 1;
+        }
+        .option-btn .opt-speak {
+            background: rgba(255,255,255,0.06);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--gold);
+        }
+        .option-btn .opt-speak:active {
+            background: rgba(255,255,255,0.15);
+            transform: scale(0.85);
+        }
+        .option-btn.correct {
+            background: rgba(111, 207, 151, 0.25);
+            border-color: var(--green);
+            box-shadow: 0 0 30px rgba(111, 207, 151, 0.3);
+            transform: scale(1.02);
+        }
+        .option-btn.wrong {
+            background: rgba(235, 87, 87, 0.15);
+            border-color: var(--red);
+            opacity: 0.6;
+            transform: scale(0.95);
+        }
+        .option-btn.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        .option-btn.disabled .opt-speak {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .option-btn.reveal-correct {
+            border-color: var(--green);
+            background: rgba(111, 207, 151, 0.15);
+        }
+        .feedback-area {
+            width: 100%;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 6px;
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+        .feedback-area .fun-fact {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            font-weight: 400;
+            color: var(--gold);
+            text-align: center;
+        }
+        .feedback-area .mascot-feedback {
+            font-size: 2.8rem;
+            cursor: pointer;
+        }
+        .btn-next {
+            background: var(--gold);
+            border: none;
+            border-radius: 40px;
+            padding: 10px 24px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a2a3a;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: none;
+            box-shadow: 0 4px 16px rgba(247, 201, 72, 0.2);
+            margin-top: 2px;
+        }
+        .btn-next:active {
+            transform: scale(0.94);
+        }
+        .btn-next.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        .result-icon {
+            font-size: 4rem;
+        }
+        .result-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+        .result-stats {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+        .btn-home {
+            background: rgba(255,255,255,0.08);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 60px;
+            padding: 12px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        .btn-home:active {
+            background: rgba(255,255,255,0.15);
+            transform: scale(0.95);
+        }
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-20px) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg) scale(0.3); opacity: 0; }
+        }
+        @media (max-width: 480px) {
+            #app { padding: 12px 12px 16px; min-height: 540px; }
+            .title { font-size: 1.6rem; }
+            .mascot { font-size: 60px; }
+            .question-text { font-size: 1.05rem; }
+            .option-btn { padding: 10px 12px; font-size: 0.95rem; min-height: 52px; }
+            .option-btn .opt-icon { font-size: 1.8rem; width: 1.8rem; }
+            .option-btn .opt-speak { width: 28px; height: 28px; font-size: 0.9rem; }
+            .btn-start { padding: 14px 32px; font-size: 1.2rem; }
+            .nuts-counter { font-size: 1.1rem; padding: 6px 16px; }
+            .dot { width: 14px; height: 14px; }
+        }
+        @media (max-width: 380px) {
+            .question-text { font-size: 0.95rem; }
+            .option-btn { font-size: 0.85rem; min-height: 46px; }
+            .option-btn .opt-icon { font-size: 1.6rem; width: 1.6rem; }
+            .dot { width: 12px; height: 12px; }
+            .btn-next { font-size: 1rem; padding: 8px 18px; }
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+
+    <div id="mainScreen" class="screen active">
+        <div class="mascot idle" id="mainMascot">🐿️</div>
+        <div class="title">Nutcracker</div>
+        <div class="subtitle">🐚 удивительные открытия</div>
+        <div class="nuts-counter">
+            <span>🥜</span> <span id="nutsCount">0</span> <span style="font-weight:400;font-size:1rem;">сегодня</span>
+        </div>
+        <button class="btn-start" id="btnStart">🚀 Старт</button>
+        <div style="font-size:0.8rem; opacity:0.5; margin-top:4px;">сегодня уже <span id="todayDone">0</span> из 7</div>
+    </div>
+
+    <div id="gameScreen" class="screen">
+        <div class="game-header">
+            <div class="progress-dots" id="progressDots"></div>
+            <button class="btn-tts" id="btnTts" aria-label="Озвучить вопрос">🔊</button>
+        </div>
+        <div class="question-area" id="questionArea">
+            <div class="question-icon" id="qIcon">🧐</div>
+            <div class="question-text" id="qText">Загрузка...</div>
+        </div>
+        <div class="options" id="optionsContainer"></div>
+        <div class="feedback-area" id="feedbackArea">
+            <div class="mascot-feedback mascot idle" id="fbMascot">🐿️</div>
+            <div class="fun-fact" id="fbFact"></div>
+        </div>
+        <button class="btn-next" id="btnNext">➡️ Далее</button>
+    </div>
+
+    <div id="resultScreen" class="screen" style="justify-content:center; gap:12px;">
+        <div class="result-icon">🎉</div>
+        <div class="result-title">Молодец!</div>
+        <div class="result-stats" id="resultStats">Ты ответил на 7 вопросов!</div>
+        <div style="font-size:1.3rem; margin:4px 0;">🥜 +<span id="resultNuts">0</span> за сессию</div>
+        <button class="btn-home" id="btnHome">🏠 На главную</button>
+    </div>
+
+    <div class="confetti-container" id="confettiContainer"></div>
+
+</div>
+
+<script>
+    // ============================================================
+    //  DATA — 24 вопроса (удалён вопрос про банан-ягоду)
+    // ============================================================
+    const SHAPES = {
+        circle: '●',
+        square: '■',
+        triangle: '▲',
+        rectangle: '▬'
+    };
+
+    const CATEGORY_ICONS = {
+        animals: '🐾',
+        food: '🍎',
+        math: '📏',
+        space: '🌍'
+    };
+
+    const QUESTION_BANK = [
+        // ---- ЖИВОТНЫЕ (🐾) ----
+        { id: 'q1', icon: CATEGORY_ICONS.animals, question: 'Какое животное самое высокое на Земле?', options: [{ label: 'Жираф', icon: '🦒' }, { label: 'Слон', icon: '🐘' }, { label: 'Кенгуру', icon: '🦘' }], correctIndex: 0, funFact: 'У жирафа такая длинная шея, что он может достать до самых высоких листьев на деревьях!' },
+        { id: 'q2', icon: CATEGORY_ICONS.animals, question: 'Какая птица не умеет летать, зато отлично плавает?', options: [{ label: 'Пингвин', icon: '🐧' }, { label: 'Страус', icon: '🐦' }, { label: 'Попугай', icon: '🦜' }], correctIndex: 0, funFact: 'Пингвины — потрясающие пловцы! Их крылья работают как ласты, и они ловят рыбу под водой.' },
+        { id: 'q3', icon: CATEGORY_ICONS.animals, question: 'У какого животного самый длинный нос?', options: [{ label: 'Слон', icon: '🐘' }, { label: 'Муравьед', icon: '🐜' }, { label: 'Тюлень', icon: '🦭' }], correctIndex: 0, funFact: 'Хобот слона — это и нос, и рука, и даже душ! Он может им пить воду и срывать листья.' },
+        { id: 'q4', icon: CATEGORY_ICONS.animals, question: 'Какое животное может менять цвет, чтобы спрятаться?', options: [{ label: 'Хамелеон', icon: '🦎' }, { label: 'Зебра', icon: '🦓' }, { label: 'Тигр', icon: '🐯' }], correctIndex: 0, funFact: 'Хамелеоны меняют цвет, как волшебники, чтобы стать невидимыми для врагов!' },
+        { id: 'q5', icon: CATEGORY_ICONS.animals, question: 'Какое морское животное самое большое в мире?', options: [{ label: 'Кит', icon: '🐋' }, { label: 'Акула', icon: '🦈' }, { label: 'Дельфин', icon: '🐬' }], correctIndex: 0, funFact: 'Синий кит — самый большой великан на планете, даже больше динозавров!' },
+        { id: 'q6', icon: CATEGORY_ICONS.animals, question: 'У какого животного есть сумка для детёныша?', options: [{ label: 'Кенгуру', icon: '🦘' }, { label: 'Белка', icon: '🐿️' }, { label: 'Лиса', icon: '🦊' }], correctIndex: 0, funFact: 'Мама-кенгуру носит своего малыша в уютной сумке на животе, как рюкзачок!' },
+        { id: 'q7', icon: CATEGORY_ICONS.animals, question: 'Какое животное спит вниз головой?', options: [{ label: 'Летучая мышь', icon: '🦇' }, { label: 'Сова', icon: '🦉' }, { label: 'Обезьяна', icon: '🐒' }], correctIndex: 0, funFact: 'Летучие мыши спят, повиснув вверх ногами, как гроздья винограда!' },
+        { id: 'q8', icon: CATEGORY_ICONS.animals, question: 'Какая птица умеет разговаривать, как человек?', options: [{ label: 'Попугай', icon: '🦜' }, { label: 'Ворона', icon: '🐦‍⬛' }, { label: 'Сова', icon: '🦉' }], correctIndex: 0, funFact: 'Попугаи — настоящие говоруны! Они могут выучить сотни слов и даже петь песенки.' },
+        { id: 'q9', icon: CATEGORY_ICONS.animals, question: 'У какого животного целых три сердца?', options: [{ label: 'Осьминог', icon: '🐙' }, { label: 'Паук', icon: '🕷️' }, { label: 'Лягушка', icon: '🐸' }], correctIndex: 0, funFact: 'У осьминога три сердца, и они перекачивают голубую кровь!' },
+        { id: 'q10', icon: CATEGORY_ICONS.animals, question: 'У какой птицы глаза больше, чем её мозг?', options: [{ label: 'Страус', icon: '🐦' }, { label: 'Орёл', icon: '🦅' }, { label: 'Сова', icon: '🦉' }], correctIndex: 0, funFact: 'У страуса глаза размером с теннисный мяч — они больше, чем его голова!' },
+        // ---- ЕДА И ПРИРОДА (🍎) ----
+        { id: 'q12', icon: CATEGORY_ICONS.food, question: 'Какой овощ почти полностью состоит из воды?', options: [{ label: 'Огурец', icon: '🥒' }, { label: 'Морковь', icon: '🥕' }, { label: 'Картошка', icon: '🥔' }], correctIndex: 0, funFact: 'Огурец на 95% состоит из воды, поэтому он такой хрустящий и освежающий!' },
+        { id: 'q13', icon: CATEGORY_ICONS.food, question: 'Из какого дерева делают сладкий сироп?', options: [{ label: 'Клён', icon: '🍁' }, { label: 'Берёза', icon: '🌳' }, { label: 'Дуб', icon: '🌳' }], correctIndex: 0, funFact: 'Из кленового сока варят ароматный сироп, которым поливают блины!' },
+        { id: 'q14', icon: CATEGORY_ICONS.food, question: 'Какая звезда самая близкая к Земле?', options: [{ label: 'Солнце', icon: '☀️' }, { label: 'Луна', icon: '🌙' }, { label: 'Полярная звезда', icon: '⭐' }], correctIndex: 0, funFact: 'Солнце — это огромная звезда, она даёт нам свет и тепло, без неё ничего бы не росло!' },
+        { id: 'q15', icon: CATEGORY_ICONS.food, question: 'Что появляется на небе после дождя, если светит солнце?', options: [{ label: 'Радуга', icon: '🌈' }, { label: 'Туча', icon: '☁️' }, { label: 'Молния', icon: '⚡' }], correctIndex: 0, funFact: 'Радуга — это волшебный мост из капелек воды и солнечных лучей!' },
+        // ---- МАТЕМАТИКА (📏) ----
+        { id: 'q17', icon: CATEGORY_ICONS.math, question: 'Сколько лап у кошки?', options: [{ label: '2', icon: '2️⃣' }, { label: '4', icon: '4️⃣' }, { label: '6', icon: '6️⃣' }], correctIndex: 1, funFact: 'У кошки четыре мягкие лапки с острыми коготками, она может бесшумно красться!' },
+        { id: 'q18', icon: CATEGORY_ICONS.math, question: 'Сколько колёс у велосипеда?', options: [{ label: '2', icon: '2️⃣' }, { label: '3', icon: '3️⃣' }, { label: '4', icon: '4️⃣' }], correctIndex: 0, funFact: 'У велосипеда два колеса, поэтому он не падает, когда едет!' },
+        { id: 'q19', icon: CATEGORY_ICONS.math, question: 'Сколько ног у паука?', options: [{ label: '6', icon: '6️⃣' }, { label: '8', icon: '8️⃣' }, { label: '10', icon: '🔟' }], correctIndex: 1, funFact: 'Пауки — мастера с восьмью ногами, они плетут самую прочную паутину!' },
+        { id: 'q20', icon: CATEGORY_ICONS.math, question: 'Сколько пальцев на руке?', options: [{ label: '4', icon: '4️⃣' }, { label: '5', icon: '5️⃣' }, { label: '6', icon: '6️⃣' }], correctIndex: 1, funFact: 'На каждой руке пять пальцев, все они разные и помогают нам играть и рисовать.' },
+        { id: 'q21', icon: CATEGORY_ICONS.math, question: 'Какая фигура похожа на мяч?', options: [{ label: 'Круг', icon: SHAPES.circle }, { label: 'Квадрат', icon: SHAPES.square }, { label: 'Треугольник', icon: SHAPES.triangle }], correctIndex: 0, funFact: 'У круга нет углов, поэтому он хорошо катится — как мяч или колесо!' },
+        { id: 'q22', icon: CATEGORY_ICONS.math, question: 'Какая фигура имеет 3 угла?', options: [{ label: 'Треугольник', icon: SHAPES.triangle }, { label: 'Квадрат', icon: SHAPES.square }, { label: 'Круг', icon: SHAPES.circle }], correctIndex: 0, funFact: 'Треугольник — самая прочная фигура, её используют в мостах и крышах домов.' },
+        { id: 'q24', icon: CATEGORY_ICONS.math, question: 'Какая фигура имеет 4 стороны, но они не равны?', options: [{ label: 'Прямоугольник', icon: SHAPES.rectangle }, { label: 'Квадрат', icon: SHAPES.square }, { label: 'Треугольник', icon: SHAPES.triangle }], correctIndex: 0, funFact: 'У прямоугольника две стороны длинные, а две короткие — как у двери или книги.' },
+        { id: 'q25', icon: CATEGORY_ICONS.math, question: 'Какая фигура у пиццы?', options: [{ label: 'Круг', icon: SHAPES.circle }, { label: 'Квадрат', icon: SHAPES.square }, { label: 'Треугольник', icon: SHAPES.triangle }], correctIndex: 0, funFact: 'Пицца обычно круглая, как солнце, чтобы её удобно было резать на кусочки!' },
+        // ---- КОСМОС (🌍) ----
+        { id: 'q26', icon: CATEGORY_ICONS.space, question: 'Как называется наша планета?', options: [{ label: 'Земля', icon: '🌍' }, { label: 'Марс', icon: '🔴' }, { label: 'Венера', icon: '🟡' }], correctIndex: 0, funFact: 'Земля — наш дом, она вращается вокруг Солнца и похожа на большой голубой шар.' },
+        { id: 'q27', icon: CATEGORY_ICONS.space, question: 'Как называется спутник Земли?', options: [{ label: 'Луна', icon: '🌙' }, { label: 'Солнце', icon: '☀️' }, { label: 'Звезда', icon: '⭐' }], correctIndex: 0, funFact: 'Луна — наш ночной сосед, она светит нам ночью, хотя сама не излучает свет, а отражает солнечный.' }
+    ];
+
+    // ============================================================
+    //  STORAGE
+    // ============================================================
+    const STORAGE_KEY = 'nutcracker_data';
+
+    function loadStorage() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch (_) {}
+        return null;
+    }
+
+    function saveStorage(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function initStorage() {
+        let data = loadStorage();
+        if (!data) {
+            const progress = {};
+            QUESTION_BANK.forEach(q => {
+                progress[q.id] = { box: 1, lastSeen: 0, nextReview: 0, successCount: 0 };
+            });
+            data = {
+                progress: progress,
+                nutsToday: 0,
+                lastResetDate: new Date().toDateString(),
+                totalSessions: 0
+            };
+            saveStorage(data);
+        } else {
+            const today = new Date().toDateString();
+            if (data.lastResetDate !== today) {
+                data.nutsToday = 0;
+                data.lastResetDate = today;
+                saveStorage(data);
+            }
+        }
+        return data;
+    }
+
+    // ============================================================
+    //  SOUND
+    // ============================================================
+    let audioCtx = null;
+
+    function getAudioCtx() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return audioCtx;
+    }
+
+    function playTone(freq, duration, type = 'sine', volume = 0.3) {
+        try {
+            const ctx = getAudioCtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(volume, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + duration);
+        } catch (e) {}
+    }
+
+    function playSound(type) {
+        try {
+            const ctx = getAudioCtx();
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
+            switch (type) {
+                case 'click':
+                    playTone(800, 0.08, 'sine', 0.2);
+                    break;
+                case 'correct':
+                    playTone(523, 0.15, 'sine', 0.3);
+                    setTimeout(() => playTone(659, 0.15, 'sine', 0.3), 150);
+                    setTimeout(() => playTone(784, 0.2, 'sine', 0.3), 300);
+                    break;
+                case 'wrong':
+                    playTone(300, 0.4, 'sawtooth', 0.15);
+                    break;
+                case 'complete':
+                    [523, 587, 659, 784, 880, 988, 1047].forEach((f, i) => {
+                        setTimeout(() => playTone(f, 0.15, 'sine', 0.25), i * 120);
+                    });
+                    break;
+                default:
+                    break;
+            }
+        } catch (e) {}
+    }
+
+    // ============================================================
+    //  CONFETTI
+    // ============================================================
+    function fireConfetti(count = 60) {
+        const container = document.getElementById('confettiContainer');
+        const colors = ['#f7c948', '#6fcf97', '#5d9bff', '#eb5757', '#bb86fc', '#ff6b6b', '#f5a623', '#4ecdc4'];
+        for (let i = 0; i < count; i++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            const size = 6 + Math.random() * 10;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const left = Math.random() * 100;
+            const duration = 2 + Math.random() * 2.5;
+            const delay = Math.random() * 1.5;
+            const rotate = Math.random() * 360;
+            piece.style.cssText = `left:${left}%;width:${size}px;height:${size}px;background:${color};border-radius:${Math.random()>0.5?'50%':'2px'};animation-duration:${duration}s;animation-delay:${delay}s;transform:rotate(${rotate}deg);`;
+            container.appendChild(piece);
+            setTimeout(() => piece.remove(), (duration + delay) * 1000 + 200);
+        }
+        setTimeout(() => container.innerHTML = '', 6000);
+    }
+
+    // ============================================================
+    //  TTS
+    // ============================================================
+    let preferredVoice = null;
+
+    function loadVoices() {
+        const voices = window.speechSynthesis.getVoices();
+        if (!voices || voices.length === 0) return;
+        const priority = ['Google русский', 'Microsoft Irina', 'Microsoft Pavel'];
+        let selected = null;
+        for (const name of priority) {
+            const found = voices.find(v => v.name === name && v.lang.startsWith('ru'));
+            if (found) {
+                selected = found;
+                break;
+            }
+        }
+        if (!selected) {
+            selected = voices.find(v => v.lang.startsWith('ru'));
+        }
+        if (!selected && voices.length > 0) {
+            selected = voices[0];
+        }
+        preferredVoice = selected;
+        console.log('Выбран голос:', selected ? selected.name : 'не найден');
+    }
+
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        if (window.speechSynthesis.getVoices().length > 0) {
+            loadVoices();
+        } else {
+            window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+        }
+    }
+
+    function speakText(text, callback) {
+        if (!('speechSynthesis' in window)) {
+            if (callback) setTimeout(callback, 0);
+            return;
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ru-RU';
+        utterance.rate = 0.8;
+        utterance.pitch = 1.15;
+        utterance.volume = 1;
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
+        if (callback) {
+            utterance.onend = callback;
+        }
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function speakSequence(texts) {
+        if (!texts || texts.length === 0) return;
+        let index = 0;
+        function speakNext() {
+            if (index >= texts.length) return;
+            const text = texts[index];
+            index++;
+            speakText(text, speakNext);
+        }
+        speakNext();
+    }
+
+    // ============================================================
+    //  APP STATE
+    // ============================================================
+    let appData = initStorage();
+    let sessionQueue = [];
+    let currentQuestionId = null;
+    let isAnswering = false;
+    let correctCountInSession = 0;
+
+    // DOM refs
+    const mainScreen = document.getElementById('mainScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const mainMascot = document.getElementById('mainMascot');
+    const fbMascot = document.getElementById('fbMascot');
+    const btnStart = document.getElementById('btnStart');
+    const btnHome = document.getElementById('btnHome');
+    const btnNext = document.getElementById('btnNext');
+    const btnTts = document.getElementById('btnTts');
+    const progressDots = document.getElementById('progressDots');
+    const qIcon = document.getElementById('qIcon');
+    const qText = document.getElementById('qText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const fbFact = document.getElementById('fbFact');
+    const nutsCount = document.getElementById('nutsCount');
+    const todayDone = document.getElementById('todayDone');
+    const resultNuts = document.getElementById('resultNuts');
+    const resultStats = document.getElementById('resultStats');
+
+    // ============================================================
+    //  HELPERS
+    // ============================================================
+    function getQuestion(id) {
+        return QUESTION_BANK.find(q => q.id === id);
+    }
+
+    function getProgress(id) {
+        return appData.progress[id];
+    }
+
+    function updateProgress(id, newBox, newNextReview) {
+        const p = appData.progress[id];
+        p.box = newBox;
+        p.nextReview = newNextReview;
+        p.lastSeen = Date.now();
+        if (newBox === 3) p.successCount = (p.successCount || 0) + 1;
+        saveStorage(appData);
+    }
+
+    function resetToBox1(id) {
+        const p = appData.progress[id];
+        p.box = 1;
+        p.nextReview = 0;
+        p.lastSeen = Date.now();
+        saveStorage(appData);
+    }
+
+    function addNut() {
+        appData.nutsToday++;
+        saveStorage(appData);
+        updateNutsDisplay();
+    }
+
+    function updateNutsDisplay() {
+        nutsCount.textContent = appData.nutsToday;
+        todayDone.textContent = Math.min(appData.nutsToday, 7);
+    }
+
+    function setMascotAnimation(element, animationClass) {
+        if (!element) return;
+        element.className = 'mascot';
+        if (animationClass) {
+            element.classList.add(animationClass);
+        } else {
+            element.classList.add('idle');
+        }
+        if (animationClass) {
+            setTimeout(() => {
+                element.className = 'mascot idle';
+            }, 800);
+        }
+    }
+
+    function doTumble(element) {
+        if (!element) return;
+        element.className = 'mascot';
+        element.classList.add('tumble');
+        setTimeout(() => {
+            element.className = 'mascot idle';
+        }, 800);
+    }
+
+    mainMascot.addEventListener('click', function(e) {
+        e.stopPropagation();
+        doTumble(this);
+        playSound('click');
+    });
+
+    fbMascot.addEventListener('click', function(e) {
+        e.stopPropagation();
+        doTumble(this);
+        playSound('click');
+    });
+
+    // ============================================================
+    //  CARD SELECTOR ENGINE — теперь строгая проверка уникальности
+    // ============================================================
+    function buildSession() {
+        const today = Date.now();
+        const allIds = QUESTION_BANK.map(q => q.id);
+        const progress = appData.progress;
+
+        const box1Due = allIds.filter(id => progress[id].box === 1 && progress[id].nextReview <= today);
+        const box2_3Due = allIds.filter(id => (progress[id].box === 2 || progress[id].box === 3) && progress[id].nextReview <= today);
+        const newCards = allIds.filter(id => progress[id].box === 1 && progress[id].nextReview === 0);
+
+        shuffleArray(box1Due);
+        shuffleArray(box2_3Due);
+        shuffleArray(newCards);
+
+        let selected = [];
+
+        // Добавляем до 2 из box1Due (уникальные)
+        for (const id of box1Due) {
+            if (selected.length >= 2) break;
+            if (!selected.includes(id)) selected.push(id);
+        }
+
+        // Добавляем 1 из box2_3Due (если есть)
+        for (const id of box2_3Due) {
+            if (!selected.includes(id)) {
+                selected.push(id);
+                break;
+            }
+        }
+
+        // Если после этого меньше 2 из box1Due, добиваем из box1Due (если остались)
+        if (selected.length < 2) {
+            for (const id of box1Due) {
+                if (selected.length >= 2) break;
+                if (!selected.includes(id)) selected.push(id);
+            }
+        }
+
+        // Теперь добиваем новыми до 7
+        for (const id of newCards) {
+            if (selected.length >= 7) break;
+            if (!selected.includes(id)) selected.push(id);
+        }
+
+        // Если всё ещё меньше 7, добиваем из всех неиспользованных
+        if (selected.length < 7) {
+            const unused = allIds.filter(id => !selected.includes(id));
+            shuffleArray(unused);
+            const need = 7 - selected.length;
+            selected.push(...unused.slice(0, need));
+        }
+
+        shuffleArray(selected);
+        return selected;
+    }
+
+    function shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // ============================================================
+    //  RENDER
+    // ============================================================
+    function renderQuestion() {
+        if (sessionQueue.length === 0) {
+            finishSession();
+            return;
+        }
+
+        const id = sessionQueue[0];
+        currentQuestionId = id;
+        const q = getQuestion(id);
+        if (!q) {
+            sessionQueue.shift();
+            renderQuestion();
+            return;
+        }
+
+        updateDots();
+
+        qIcon.textContent = q.icon || '🧐';
+        qText.textContent = q.question;
+
+        optionsContainer.innerHTML = '';
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `
+                <span class="opt-icon">${opt.icon || '📌'}</span>
+                <span class="opt-label">${opt.label}</span>
+                <span class="opt-speak" data-opt-text="${opt.label}">🔊</span>
+            `;
+            btn.dataset.index = index;
+            
+            const speakBtn = btn.querySelector('.opt-speak');
+            speakBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                speakText(speakBtn.dataset.optText);
+                playSound('click');
+            });
+
+            btn.addEventListener('click', () => handleAnswer(index));
+            optionsContainer.appendChild(btn);
+        });
+
+        feedbackArea.style.display = 'flex';
+        fbMascot.textContent = '🐿️';
+        fbFact.textContent = '';
+        btnNext.classList.remove('show');
+        btnNext.style.display = 'none';
+        isAnswering = false;
+
+        speakText(q.question);
+    }
+
+    function updateDots() {
+        const total = 7;
+        const done = 7 - sessionQueue.length;
+        progressDots.innerHTML = '';
+        for (let i = 0; i < total; i++) {
+            const dot = document.createElement('span');
+            dot.className = 'dot';
+            if (i < done) dot.classList.add('done');
+            else if (i === done && sessionQueue.length > 0) dot.classList.add('current');
+            progressDots.appendChild(dot);
+        }
+    }
+
+    // ============================================================
+    //  ANSWER HANDLING
+    // ============================================================
+    function handleAnswer(selectedIndex) {
+        if (isAnswering) return;
+        if (sessionQueue.length === 0) return;
+
+        isAnswering = true;
+        const id = sessionQueue[0];
+        const q = getQuestion(id);
+        const progress = getProgress(id);
+
+        const buttons = optionsContainer.querySelectorAll('.option-btn');
+        buttons.forEach((btn, idx) => {
+            btn.classList.add('disabled');
+            if (idx === q.correctIndex) btn.classList.add('reveal-correct');
+        });
+
+        const isCorrect = (selectedIndex === q.correctIndex);
+
+        if (isCorrect) {
+            playSound('correct');
+            buttons[selectedIndex].classList.add('correct');
+            fbMascot.textContent = '🎉';
+            fbFact.textContent = q.funFact;
+            setMascotAnimation(fbMascot, 'happy');
+            fireConfetti(40);
+
+            speakSequence(['Молодец!', q.funFact]);
+
+            btnNext.style.display = 'block';
+            btnNext.classList.add('show');
+
+            let newBox = progress.box;
+            if (newBox === 1) newBox = 2;
+            else if (newBox === 2) newBox = 3;
+            else if (newBox === 3) {
+                progress.successCount = (progress.successCount || 0) + 1;
+            }
+            const days = newBox === 2 ? 2 : (newBox === 3 ? 7 : 0);
+            const nextReview = Date.now() + days * 24 * 60 * 60 * 1000;
+            updateProgress(id, newBox, nextReview);
+
+            addNut();
+            correctCountInSession++;
+
+            sessionQueue.shift();
+
+        } else {
+            playSound('wrong');
+            buttons[selectedIndex].classList.add('wrong');
+            fbMascot.textContent = '🤔';
+            fbFact.textContent = 'Не беда! Давай запомним правильный ответ.';
+            speakText('Не беда! Давай запомним правильный ответ.');
+            setMascotAnimation(fbMascot, 'sad');
+            if (navigator.vibrate) navigator.vibrate(30);
+
+            resetToBox1(id);
+
+            sessionQueue.shift();
+            // Если это был последний вопрос — не добавляем обратно
+            if (sessionQueue.length > 0) {
+                sessionQueue.push(id);
+            }
+
+            setTimeout(() => {
+                btnNext.style.display = 'block';
+                btnNext.classList.add('show');
+            }, 1500);
+        }
+
+        btnNext.onclick = () => {
+            playSound('click');
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            if (sessionQueue.length === 0) {
+                finishSession();
+            } else {
+                renderQuestion();
+            }
+        };
+    }
+
+    // ============================================================
+    //  FINISH SESSION
+    // ============================================================
+    function finishSession() {
+        playSound('complete');
+        fireConfetti(100);
+        gameScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+        resultNuts.textContent = correctCountInSession;
+        resultStats.textContent = `Ты правильно ответил на ${correctCountInSession} из 7 вопросов!`;
+        speakText('Отлично! Ты молодец!');
+        setMascotAnimation(document.querySelector('.result-icon'), 'celebrate');
+    }
+
+    // ============================================================
+    //  START SESSION
+    // ============================================================
+    function startSession() {
+        playSound('click');
+        sessionQueue = buildSession();
+        correctCountInSession = 0;
+        isAnswering = false;
+
+        mainScreen.classList.remove('active');
+        gameScreen.classList.add('active');
+        resultScreen.classList.remove('active');
+
+        renderQuestion();
+        updateNutsDisplay();
+        setMascotAnimation(fbMascot, 'idle');
+    }
+
+    // ============================================================
+    //  EVENT LISTENERS
+    // ============================================================
+    btnStart.addEventListener('click', startSession);
+
+    btnHome.addEventListener('click', () => {
+        playSound('click');
+        resultScreen.classList.remove('active');
+        mainScreen.classList.add('active');
+        updateNutsDisplay();
+        sessionQueue = [];
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+        setMascotAnimation(mainMascot, 'idle');
+    });
+
+    btnTts.addEventListener('click', () => {
+        if (currentQuestionId) {
+            const q = getQuestion(currentQuestionId);
+            if (q) {
+                speakText(q.question);
+                playSound('click');
+            }
+        }
+    });
+
+    // Инициализация
+    updateNutsDisplay();
+    setMascotAnimation(mainMascot, 'idle');
+    console.log('🐿️ Nutcracker готов — дубликатов в сессии больше нет!');
+</script>
+</body>
+</html>
