@@ -37,20 +37,25 @@
             width: 100%;
             background: var(--card-bg);
             border-radius: var(--radius);
-            padding: 16px 16px 20px;
             box-shadow: var(--shadow);
             position: relative;
             overflow: hidden;
-            min-height: 600px;
-            max-height: 100vh;
+            height: 100vh;
+            max-height: 780px;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 16px 12px;
         }
         .screen {
             display: none;
             flex-direction: column;
             align-items: center;
-            gap: 14px;
+            justify-content: center;
+            gap: 10px;
             animation: fadeIn 0.5s ease;
             width: 100%;
+            flex: 1 0 auto;
+            min-height: 0;
         }
         .screen.active {
             display: flex;
@@ -59,82 +64,102 @@
             from { opacity: 0; transform: scale(0.95) translateY(10px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
-        .mascot {
-            font-size: 72px;
-            line-height: 1;
-            margin-bottom: 2px;
-            transition: transform 0.3s ease;
+        .mascot-wrapper {
             display: inline-block;
+            position: relative;
             cursor: pointer;
             user-select: none;
+            line-height: 1;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
         }
-        .mascot.idle {
+        .mascot-wrapper.idle {
             animation: float 3s ease-in-out infinite;
         }
-        .mascot.happy {
+        .mascot-wrapper.happy {
             animation: bounceHappy 0.6s ease;
         }
-        .mascot.sad {
+        .mascot-wrapper.sad {
             animation: shakeSad 0.6s ease;
         }
-        .mascot.celebrate {
+        .mascot-wrapper.celebrate {
             animation: celebrate 0.8s ease infinite alternate;
         }
-        .mascot.tumble {
+        .mascot-wrapper.tumble {
             animation: tumble 0.8s ease forwards;
+        }
+        .mascot-img {
+            max-height: 150px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            pointer-events: none;
         }
         @keyframes float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
+            50% { transform: translateY(-10px); }
         }
         @keyframes bounceHappy {
             0% { transform: scale(1); }
-            30% { transform: scale(1.4) rotate(-10deg); }
-            60% { transform: scale(0.9) rotate(5deg); }
+            30% { transform: scale(1.3) rotate(-8deg); }
+            60% { transform: scale(0.9) rotate(4deg); }
             100% { transform: scale(1) rotate(0); }
         }
         @keyframes shakeSad {
             0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-10px) rotate(-5deg); }
-            40% { transform: translateX(10px) rotate(5deg); }
-            60% { transform: translateX(-6px); }
-            80% { transform: translateX(6px); }
+            20% { transform: translateX(-8px) rotate(-3deg); }
+            40% { transform: translateX(8px) rotate(3deg); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
         }
         @keyframes celebrate {
-            0% { transform: rotate(-5deg) scale(1); }
-            100% { transform: rotate(5deg) scale(1.1); }
+            0% { transform: rotate(-4deg) scale(1); }
+            100% { transform: rotate(4deg) scale(1.05); }
         }
         @keyframes tumble {
             0% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(-20deg) scale(1.1) translateY(-20px); }
+            25% { transform: rotate(-15deg) scale(1.1) translateY(-15px); }
             50% { transform: rotate(0deg) scale(0.9) translateY(0px); }
-            75% { transform: rotate(20deg) scale(1.1) translateY(-15px); }
+            75% { transform: rotate(15deg) scale(1.1) translateY(-10px); }
             100% { transform: rotate(0deg) scale(1) translateY(0); }
         }
+        .question-area.slide-up {
+            animation: slideUpOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes slideUpOut {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-60px) scale(0.85); }
+        }
         .title {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 900;
             color: var(--gold);
             text-shadow: 0 4px 12px rgba(247, 201, 72, 0.3);
             letter-spacing: 1px;
+            flex-shrink: 0;
+            margin-top: -2px;
         }
         .subtitle {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             opacity: 0.8;
-            margin-top: -6px;
             font-weight: 500;
+            flex-shrink: 0;
+            margin-top: -6px;
         }
         .nuts-counter {
             background: rgba(255,255,255,0.08);
             border-radius: 60px;
-            padding: 8px 20px;
+            padding: 6px 18px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             font-size: 1.2rem;
             font-weight: 700;
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255,255,255,0.06);
+            flex-shrink: 0;
+            margin-top: 2px;
         }
         .nuts-counter span {
             color: var(--gold);
@@ -143,21 +168,26 @@
             background: linear-gradient(135deg, var(--gold), #f5a623);
             border: none;
             border-radius: 60px;
-            padding: 16px 40px;
-            font-size: 1.4rem;
+            padding: 16px 32px;
+            font-size: 2rem;
             font-weight: 800;
             color: #1a2a3a;
             cursor: pointer;
             box-shadow: 0 8px 24px rgba(247, 201, 72, 0.3);
             transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 4px;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            width: 100%;
+            max-width: 280px;
+            animation: pulse-start 2s infinite;
             position: relative;
             overflow: hidden;
+            flex-shrink: 0;
+            margin-top: 4px;
         }
         .btn-start:active {
             transform: scale(0.94);
             box-shadow: 0 4px 12px rgba(247, 201, 72, 0.2);
+            animation: none;
         }
         .btn-start::after {
             content: '';
@@ -170,23 +200,61 @@
             opacity: 0;
             transition: opacity 0.3s;
         }
-        .btn-start:hover::after {
-            opacity: 1;
+        .btn-forest {
+            background: rgba(111, 207, 151, 0.15);
+            border: 1px solid rgba(111, 207, 151, 0.2);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            border: none;
+            border-radius: 60px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            width: 100%;
+            max-width: 280px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .btn-secondary:active {
+            transform: scale(0.94);
+            background: rgba(255,255,255,0.15);
+        }
+        .btn-secondary-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            max-width: 280px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .today-progress {
+            font-size: 0.7rem;
+            opacity: 0.4;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
         }
         .game-header {
             width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 4px;
+            padding: 0 2px;
+            flex-shrink: 0;
         }
         .progress-dots {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
         .dot {
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
             background: rgba(255,255,255,0.15);
             transition: all 0.3s;
@@ -200,52 +268,66 @@
             box-shadow: 0 0 20px rgba(247, 201, 72, 0.4);
             transform: scale(1.2);
         }
-        .btn-tts {
-            background: rgba(255,255,255,0.08);
-            border: none;
-            border-radius: 50%;
-            width: 42px;
-            height: 42px;
-            font-size: 1.6rem;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-tts:active {
-            background: rgba(255,255,255,0.2);
-            transform: scale(0.9);
-        }
         .question-area {
             width: 100%;
             background: rgba(0,0,0,0.2);
             border-radius: 20px;
-            padding: 14px 12px;
+            padding: 10px 14px;
             text-align: center;
-            min-height: 100px;
+            min-height: 80px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
+            position: relative;
+            flex-shrink: 0;
         }
         .question-icon {
-            font-size: 2.8rem;
-            margin-bottom: 4px;
+            font-size: 2.4rem;
+            margin-bottom: 2px;
         }
         .question-text {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: 600;
-            line-height: 1.4;
+            line-height: 1.3;
             max-width: 90%;
+        }
+        .btn-tts {
+            position: absolute;
+            top: 4px;
+            right: 8px;
+            background: rgba(255,255,255,0.08);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+        }
+        .btn-tts:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.9);
         }
         .options {
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-top: 2px;
+            gap: 8px;
+            margin-top: 4px;
+            transition: opacity 0.2s, pointer-events 0.2s;
+            flex: 1 1 auto;
+            min-height: 0;
+            justify-content: center;
+        }
+        .options.disabled {
+            pointer-events: none;
+            opacity: 0.8;
         }
         .option-btn {
             background: rgba(255,255,255,0.06);
@@ -262,18 +344,18 @@
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             backdrop-filter: blur(2px);
             text-align: left;
-            min-height: 58px;
+            min-height: 54px;
             position: relative;
         }
         .option-btn:active:not(.disabled) {
             transform: scale(0.95);
         }
         .option-btn .opt-icon {
-            font-size: 2rem;
+            font-size: 1.8rem;
             flex-shrink: 0;
             color: var(--gold);
             font-weight: 700;
-            width: 2.2rem;
+            width: 2rem;
             text-align: center;
         }
         .option-btn .opt-label {
@@ -283,9 +365,9 @@
             background: rgba(255,255,255,0.06);
             border: none;
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            font-size: 1rem;
+            width: 30px;
+            height: 30px;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: background 0.2s, transform 0.2s;
             display: flex;
@@ -324,42 +406,49 @@
         }
         .feedback-area {
             width: 100%;
-            min-height: 50px;
+            min-height: 36px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
-            font-size: 1rem;
+            gap: 2px;
+            font-size: 0.9rem;
             font-weight: 500;
-            padding: 6px;
+            padding: 4px 0;
             border-radius: 16px;
             transition: all 0.3s;
+            flex-shrink: 0;
         }
         .feedback-area .fun-fact {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             opacity: 0.9;
             font-weight: 400;
             color: var(--gold);
             text-align: center;
         }
         .feedback-area .mascot-feedback {
-            font-size: 2.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             cursor: pointer;
         }
         .btn-next {
             background: var(--gold);
             border: none;
-            border-radius: 40px;
-            padding: 10px 24px;
-            font-size: 1.1rem;
-            font-weight: 700;
+            border-radius: 60px;
+            padding: 14px 28px;
+            font-size: 1.4rem;
+            font-weight: 800;
             color: #1a2a3a;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             display: none;
             box-shadow: 0 4px 16px rgba(247, 201, 72, 0.2);
-            margin-top: 2px;
+            margin-top: 6px;
+            width: 100%;
+            max-width: 260px;
+            letter-spacing: 1px;
+            flex-shrink: 0;
         }
         .btn-next:active {
             transform: scale(0.94);
@@ -369,15 +458,15 @@
             animation: fadeIn 0.3s ease;
         }
         .result-icon {
-            font-size: 4rem;
+            font-size: 3.6rem;
         }
         .result-title {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: var(--gold);
         }
         .result-stats {
-            font-size: 1.1rem;
+            font-size: 1rem;
             opacity: 0.8;
         }
         .btn-home {
@@ -394,6 +483,123 @@
         .btn-home:active {
             background: rgba(255,255,255,0.15);
             transform: scale(0.95);
+        }
+        .back-to-menu {
+            background: rgba(255,255,255,0.06);
+            border: none;
+            border-radius: 60px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            transition: background 0.2s;
+            align-self: flex-start;
+            flex-shrink: 0;
+        }
+        .back-to-menu:active {
+            background: rgba(255,255,255,0.12);
+        }
+        .forest-container {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            border-radius: 20px;
+            background: radial-gradient(ellipse at 30% 20%, #2d5a3d, #1a2f22);
+            border: 2px solid rgba(255,255,255,0.06);
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
+            scroll-behavior: smooth;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+        }
+        .forest-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .forest-container::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+        .forest-container::-webkit-scrollbar-thumb {
+            background: var(--gold);
+            border-radius: 4px;
+        }
+        .forest-svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            touch-action: none;
+        }
+        .forest-spot-group {
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .forest-spot-group:active {
+            transform: none;
+        }
+        .forest-spot-circle {
+            stroke: #fff;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 16px rgba(247, 201, 72, 0.6));
+            transition: r 0.2s;
+        }
+        .forest-spot-group:hover .forest-spot-circle {
+            r: 34;
+        }
+        .forest-spot-text {
+            fill: #1a2a3a;
+            font-size: 22px;
+            font-weight: 800;
+            text-anchor: middle;
+            dominant-baseline: central;
+            font-family: 'Segoe UI', sans-serif;
+            pointer-events: none;
+        }
+        .forest-spot-label {
+            fill: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            text-anchor: middle;
+            dominant-baseline: hanging;
+            font-family: 'Segoe UI', sans-serif;
+            pointer-events: none;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+        .forest-tree {
+            font-size: 28px;
+            pointer-events: none;
+        }
+        .forest-path {
+            fill: none;
+            stroke: #8b7a5a;
+            stroke-width: 8;
+            stroke-dasharray: 8 10;
+            opacity: 0.5;
+        }
+        .nut-firework {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+            font-size: 1.8rem;
+            animation: nutFirework 1.2s ease-out forwards;
+        }
+        @keyframes nutFirework {
+            0% { opacity: 1; transform: translate(0, 0) scale(0.5) rotate(0deg); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(360deg); }
+        }
+        .perfect-title {
+            background: linear-gradient(135deg, var(--gold), #f5a623);
+            color: #1a2a3a;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            box-shadow: 0 0 30px rgba(247, 201, 72, 0.4);
+            animation: pulse-gold 1s ease-in-out infinite alternate;
+        }
+        @keyframes pulse-gold {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(247, 201, 72, 0.3); }
+            100% { transform: scale(1.05); box-shadow: 0 0 40px rgba(247, 201, 72, 0.6); }
         }
         .confetti-container {
             position: fixed;
@@ -417,63 +623,101 @@
             100% { transform: translateY(110vh) rotate(720deg) scale(0.3); opacity: 0; }
         }
         @media (max-width: 480px) {
-            #app { padding: 12px 12px 16px; min-height: 540px; }
-            .title { font-size: 1.6rem; }
-            .mascot { font-size: 60px; }
-            .question-text { font-size: 1.05rem; }
-            .option-btn { padding: 10px 12px; font-size: 0.95rem; min-height: 52px; }
-            .option-btn .opt-icon { font-size: 1.8rem; width: 1.8rem; }
-            .option-btn .opt-speak { width: 28px; height: 28px; font-size: 0.9rem; }
-            .btn-start { padding: 14px 32px; font-size: 1.2rem; }
-            .nuts-counter { font-size: 1.1rem; padding: 6px 16px; }
-            .dot { width: 14px; height: 14px; }
+            #app { padding: 8px 12px 10px; max-height: 700px; }
+            .mascot-img { max-height: 130px; }
+            .title { font-size: 1.5rem; }
+            .btn-start { font-size: 1.6rem; padding: 14px 28px; }
+            .btn-next { font-size: 1.2rem; padding: 12px 24px; max-width: 220px; }
+            .question-text { font-size: 1rem; }
+            .option-btn { font-size: 0.95rem; padding: 10px 14px; min-height: 48px; }
+            .option-btn .opt-icon { font-size: 1.5rem; width: 1.6rem; }
+            .dot { width: 12px; height: 12px; }
+            .btn-tts { width: 32px; height: 32px; font-size: 1.1rem; }
+            .feedback-area { min-height: 30px; }
+            .nuts-counter { font-size: 1rem; padding: 4px 14px; }
+            .forest-spot-text { font-size: 18px; }
+            .forest-spot-label { font-size: 11px; }
+            .forest-tree { font-size: 22px; }
         }
         @media (max-width: 380px) {
-            .question-text { font-size: 0.95rem; }
-            .option-btn { font-size: 0.85rem; min-height: 46px; }
-            .option-btn .opt-icon { font-size: 1.6rem; width: 1.6rem; }
-            .dot { width: 12px; height: 12px; }
-            .btn-next { font-size: 1rem; padding: 8px 18px; }
+            .mascot-img { max-height: 110px; }
+            .title { font-size: 1.2rem; }
+            .btn-start { font-size: 1.3rem; padding: 12px 20px; }
+            .btn-next { font-size: 1rem; padding: 10px 18px; max-width: 180px; }
+            .question-text { font-size: 0.9rem; }
+            .option-btn { font-size: 0.85rem; padding: 8px 12px; min-height: 42px; }
+            .option-btn .opt-icon { font-size: 1.2rem; width: 1.4rem; }
+            .dot { width: 10px; height: 10px; }
+            .btn-tts { width: 28px; height: 28px; font-size: 0.9rem; }
+            .forest-spot-text { font-size: 15px; }
+            .forest-spot-label { font-size: 9px; }
+            .forest-tree { font-size: 18px; }
         }
     </style>
 </head>
 <body>
 <div id="app">
 
+    <!-- MAIN SCREEN -->
     <div id="mainScreen" class="screen active">
-        <div class="mascot idle" id="mainMascot">🐿️</div>
+        <div class="mascot-wrapper idle" id="mainWrapper">
+            <img id="mainMascotImg" class="mascot-img" src="squirrel_idle.png" alt="Mascot">
+        </div>
         <div class="title">Nutcracker</div>
         <div class="subtitle">🐚 удивительные открытия</div>
         <div class="nuts-counter">
-            <span>🥜</span> <span id="nutsCount">0</span> <span style="font-weight:400;font-size:1rem;">сегодня</span>
+            <span id="nutIcon">🥜</span> <span id="nutsCount">0</span> <span style="font-weight:400;font-size:0.8rem;">орехов</span>
         </div>
         <button class="btn-start" id="btnStart">🚀 Старт</button>
-        <div style="font-size:0.8rem; opacity:0.5; margin-top:4px;">сегодня уже <span id="todayDone">0</span> из 7</div>
+        <div class="btn-secondary-group">
+            <button class="btn-secondary btn-forest" id="btnForest">🌳 Магический лес</button>
+        </div>
+        <div class="today-progress">сегодня уже <span id="todayDone">0</span> из 7</div>
     </div>
 
+    <!-- GAME SCREEN -->
     <div id="gameScreen" class="screen">
         <div class="game-header">
             <div class="progress-dots" id="progressDots"></div>
-            <button class="btn-tts" id="btnTts" aria-label="Озвучить вопрос">🔊</button>
+            <div style="width:36px;"></div>
         </div>
         <div class="question-area" id="questionArea">
+            <button class="btn-tts" id="btnTts" aria-label="Озвучить вопрос">🔊</button>
             <div class="question-icon" id="qIcon">🧐</div>
             <div class="question-text" id="qText">Загрузка...</div>
         </div>
         <div class="options" id="optionsContainer"></div>
         <div class="feedback-area" id="feedbackArea">
-            <div class="mascot-feedback mascot idle" id="fbMascot">🐿️</div>
+            <div class="mascot-feedback">
+                <div class="mascot-wrapper idle" id="gameWrapper">
+                    <img id="gameMascotImg" class="mascot-img" src="squirrel_idle.png" alt="Mascot">
+                </div>
+            </div>
             <div class="fun-fact" id="fbFact"></div>
         </div>
         <button class="btn-next" id="btnNext">➡️ Далее</button>
     </div>
 
-    <div id="resultScreen" class="screen" style="justify-content:center; gap:12px;">
+    <!-- RESULT SCREEN -->
+    <div id="resultScreen" class="screen" style="justify-content:center; gap:10px;">
         <div class="result-icon">🎉</div>
         <div class="result-title">Молодец!</div>
+        <div id="perfectBadge" style="display:none;" class="perfect-title">⭐ Супер-Белка дня! ⭐</div>
         <div class="result-stats" id="resultStats">Ты ответил на 7 вопросов!</div>
-        <div style="font-size:1.3rem; margin:4px 0;">🥜 +<span id="resultNuts">0</span> за сессию</div>
+        <div style="font-size:1.1rem; margin:4px 0;">🥜 +<span id="resultNuts">0</span> за сессию</div>
         <button class="btn-home" id="btnHome">🏠 На главную</button>
+    </div>
+
+    <!-- FOREST SCREEN -->
+    <div id="forestScreen" class="screen">
+        <button class="back-to-menu" id="backFromForest">← Назад</button>
+        <div style="font-size:1rem; margin:4px 0;">🌳 Магический лес</div>
+        <div style="font-size:0.8rem; opacity:0.7; margin-bottom:6px;">Пролистай и выбери тему</div>
+        <div class="forest-container" id="forestContainer">
+            <svg class="forest-svg" viewBox="0 0 400 850" id="forestSvg">
+                <path class="forest-path" d="M200,50 C180,130 220,180 200,240 C180,300 120,330 160,400 C200,470 280,480 240,560 C200,640 140,650 180,720 C220,790 200,820 200,850" />
+            </svg>
+        </div>
     </div>
 
     <div class="confetti-container" id="confettiContainer"></div>
@@ -482,7 +726,7 @@
 
 <script>
     // ============================================================
-    //  DATA — 24 вопроса (удалён вопрос про банан-ягоду)
+    //  DATA — 39 вопросов (6 тем)
     // ============================================================
     const SHAPES = {
         circle: '●',
@@ -495,9 +739,70 @@
         animals: '🐾',
         food: '🍎',
         math: '📏',
-        space: '🌍'
+        space: '🌍',
+        travel: '🗺️',
+        art: '🖌️'
     };
 
+    // Определяем категории (темы)
+    const CATEGORIES = {
+        animals: {
+            id: 'animals',
+            name: 'Животные',
+            icon: '🐾',
+            color: '#6fcf97',
+            ids: [],
+            x: 200,
+            y: 115
+        },
+        travel: {
+            id: 'travel',
+            name: 'Путешествия',
+            icon: '🗺️',
+            color: '#f39c12',
+            ids: [],
+            x: 150,
+            y: 230
+        },
+        food: {
+            id: 'food',
+            name: 'Еда и природа',
+            icon: '🍎',
+            color: '#f7c948',
+            ids: [],
+            x: 220,
+            y: 345
+        },
+        math: {
+            id: 'math',
+            name: 'Математика',
+            icon: '📏',
+            color: '#5d9bff',
+            ids: [],
+            x: 165,
+            y: 470
+        },
+        art: {
+            id: 'art',
+            name: 'Искусство',
+            icon: '🖌️',
+            color: '#ab47bc',
+            ids: [],
+            x: 235,
+            y: 595
+        },
+        space: {
+            id: 'space',
+            name: 'Космос',
+            icon: '🌍',
+            color: '#bb86fc',
+            ids: [],
+            x: 185,
+            y: 730
+        }
+    };
+
+    // Вопросы
     const QUESTION_BANK = [
         // ---- ЖИВОТНЫЕ (🐾) ----
         { id: 'q1', icon: CATEGORY_ICONS.animals, question: 'Какое животное самое высокое на Земле?', options: [{ label: 'Жираф', icon: '🦒' }, { label: 'Слон', icon: '🐘' }, { label: 'Кенгуру', icon: '🦘' }], correctIndex: 0, funFact: 'У жирафа такая длинная шея, что он может достать до самых высоких листьев на деревьях!' },
@@ -526,7 +831,51 @@
         { id: 'q25', icon: CATEGORY_ICONS.math, question: 'Какая фигура у пиццы?', options: [{ label: 'Круг', icon: SHAPES.circle }, { label: 'Квадрат', icon: SHAPES.square }, { label: 'Треугольник', icon: SHAPES.triangle }], correctIndex: 0, funFact: 'Пицца обычно круглая, как солнце, чтобы её удобно было резать на кусочки!' },
         // ---- КОСМОС (🌍) ----
         { id: 'q26', icon: CATEGORY_ICONS.space, question: 'Как называется наша планета?', options: [{ label: 'Земля', icon: '🌍' }, { label: 'Марс', icon: '🔴' }, { label: 'Венера', icon: '🟡' }], correctIndex: 0, funFact: 'Земля — наш дом, она вращается вокруг Солнца и похожа на большой голубой шар.' },
-        { id: 'q27', icon: CATEGORY_ICONS.space, question: 'Как называется спутник Земли?', options: [{ label: 'Луна', icon: '🌙' }, { label: 'Солнце', icon: '☀️' }, { label: 'Звезда', icon: '⭐' }], correctIndex: 0, funFact: 'Луна — наш ночной сосед, она светит нам ночью, хотя сама не излучает свет, а отражает солнечный.' }
+        { id: 'q27', icon: CATEGORY_ICONS.space, question: 'Как называется спутник Земли?', options: [{ label: 'Луна', icon: '🌙' }, { label: 'Солнце', icon: '☀️' }, { label: 'Звезда', icon: '⭐' }], correctIndex: 0, funFact: 'Луна — наш ночной сосед, она светит нам ночью, хотя сама не излучает свет, а отражает солнечный.' },
+        // ---- ПУТЕШЕСТВИЯ (🗺️) ----
+        { id: 'q46', icon: CATEGORY_ICONS.travel, question: 'В какой стране находится Эйфелева башня?', options: [{ label: 'Франция', icon: '🇫🇷' }, { label: 'Италия', icon: '🇮🇹' }, { label: 'Англия', icon: '🇬🇧' }], correctIndex: 0, funFact: 'Эйфелева башня — самый узнаваемый символ Франции, её построили в 1889 году!' },
+        { id: 'q47', icon: CATEGORY_ICONS.travel, question: 'Где находится Великая пирамида Хеопса?', options: [{ label: 'Египет', icon: '🇪🇬' }, { label: 'Греция', icon: '🇬🇷' }, { label: 'Турция', icon: '🇹🇷' }], correctIndex: 0, funFact: 'Пирамида Хеопса — единственное из семи чудес света, которое сохранилось до наших дней!' },
+        { id: 'q48', icon: CATEGORY_ICONS.travel, question: 'Какая страна похожа на сапог?', options: [{ label: 'Италия', icon: '🇮🇹' }, { label: 'Испания', icon: '🇪🇸' }, { label: 'Франция', icon: '🇫🇷' }], correctIndex: 0, funFact: 'Италия действительно похожа на сапог, который «пинает» остров Сицилия!' },
+        { id: 'q49', icon: CATEGORY_ICONS.travel, question: 'На каком континенте живут пингвины?', options: [{ label: 'Антарктида', icon: '🧊' }, { label: 'Африка', icon: '🌍' }, { label: 'Австралия', icon: '🦘' }], correctIndex: 0, funFact: 'Пингвины живут в Антарктиде, самом холодном месте на Земле!' },
+        { id: 'q50', icon: CATEGORY_ICONS.travel, question: 'Какой город знаменит своими каналами вместо улиц?', options: [{ label: 'Венеция', icon: '🛶' }, { label: 'Париж', icon: '🗼' }, { label: 'Лондон', icon: '🇬🇧' }], correctIndex: 0, funFact: 'Венеция построена на 118 островах, и вместо машин там лодки — гондолы!' },
+        { id: 'q51', icon: CATEGORY_ICONS.travel, question: 'Где находится Великая Китайская стена?', options: [{ label: 'Китай', icon: '🇨🇳' }, { label: 'Япония', icon: '🇯🇵' }, { label: 'Индия', icon: '🇮🇳' }], correctIndex: 0, funFact: 'Великая Китайская стена тянется на 21 тысячу километров — это как полпути вокруг Земли!' },
+        { id: 'q52', icon: CATEGORY_ICONS.travel, question: 'Какая страна самая большая по территории в мире?', options: [{ label: 'Россия', icon: '🇷🇺' }, { label: 'Китай', icon: '🇨🇳' }, { label: 'США', icon: '🇺🇸' }], correctIndex: 0, funFact: 'Россия — самая большая страна, она занимает 1/8 часть всей суши на планете!' },
+        // ---- ИСКУССТВО (🖌️) ----
+        { id: 'q53', icon: CATEGORY_ICONS.art, question: 'Кто нарисовал картину «Мона Лиза»?', options: [{ label: 'Леонардо да Винчи', icon: '🖌️' }, { label: 'Микеланджело', icon: '🗿' }, { label: 'Рафаэль', icon: '🎨' }], correctIndex: 0, funFact: 'Мона Лиза — самая знаменитая картина в мире, она хранится в Лувре в Париже!' },
+        { id: 'q54', icon: CATEGORY_ICONS.art, question: 'Какой цвет получится, если смешать синий и жёлтый?', options: [{ label: 'Зелёный', icon: '🟢' }, { label: 'Оранжевый', icon: '🟠' }, { label: 'Фиолетовый', icon: '🟣' }], correctIndex: 0, funFact: 'Синий и жёлтый — основные цвета, а их смесь даёт зелёный, как у травы!' },
+        { id: 'q55', icon: CATEGORY_ICONS.art, question: 'Какие краски художники разводят водой?', options: [{ label: 'Акварель', icon: '💧' }, { label: 'Масляные', icon: '🛢️' }, { label: 'Пастель', icon: '🧵' }], correctIndex: 0, funFact: 'Акварельные краски прозрачные, они позволяют создавать лёгкие и воздушные рисунки!' },
+        { id: 'q56', icon: CATEGORY_ICONS.art, question: 'Кто создал скульптуру Давида?', options: [{ label: 'Микеланджело', icon: '🗿' }, { label: 'Леонардо да Винчи', icon: '🖌️' }, { label: 'Рафаэль', icon: '🎨' }], correctIndex: 0, funFact: 'Микеланджело вырезал Давида из цельного куска мрамора, и это одна из величайших скульптур!' },
+        { id: 'q57', icon: CATEGORY_ICONS.art, question: 'Как называют художника, который рисует на стенах?', options: [{ label: 'Граффити-художник', icon: '🧱' }, { label: 'Портретист', icon: '🖼️' }, { label: 'Пейзажист', icon: '🏞️' }], correctIndex: 0, funFact: 'Граффити — это современное искусство, яркие рисунки на стенах домов!' },
+        { id: 'q58', icon: CATEGORY_ICONS.art, question: 'Сколько струн у скрипки?', options: [{ label: '4', icon: '4️⃣' }, { label: '5', icon: '5️⃣' }, { label: '6', icon: '6️⃣' }], correctIndex: 0, funFact: 'У скрипки 4 струны, и на ней можно сыграть самые разные мелодии — от весёлых до грустных!' },
+    ];
+
+    // Заполняем CATEGORIES.ids
+    QUESTION_BANK.forEach(q => {
+        const catId = q.icon;
+        for (const key in CATEGORIES) {
+            if (CATEGORIES[key].icon === catId) {
+                CATEGORIES[key].ids.push(q.id);
+                break;
+            }
+        }
+    });
+
+    // ============================================================
+    //  ДЕКОРАТИВНЫЕ ДЕРЕВЬЯ
+    // ============================================================
+    const DECORATIVE_TREES = [
+        { x: 40, y: 30 }, { x: 60, y: 80 }, { x: 30, y: 140 }, { x: 70, y: 190 },
+        { x: 45, y: 250 }, { x: 80, y: 310 }, { x: 35, y: 370 }, { x: 65, y: 430 },
+        { x: 50, y: 490 }, { x: 75, y: 550 }, { x: 40, y: 620 }, { x: 60, y: 680 },
+        { x: 30, y: 740 }, { x: 70, y: 800 },
+        { x: 350, y: 45 }, { x: 320, y: 110 }, { x: 360, y: 170 }, { x: 330, y: 230 },
+        { x: 355, y: 290 }, { x: 325, y: 350 }, { x: 360, y: 410 }, { x: 340, y: 470 },
+        { x: 355, y: 530 }, { x: 330, y: 590 }, { x: 360, y: 650 }, { x: 340, y: 710 },
+        { x: 355, y: 770 }, { x: 325, y: 820 },
+        { x: 130, y: 60 }, { x: 270, y: 90 }, { x: 110, y: 180 }, { x: 290, y: 200 },
+        { x: 120, y: 320 }, { x: 280, y: 300 }, { x: 140, y: 440 }, { x: 260, y: 460 },
+        { x: 130, y: 570 }, { x: 270, y: 550 }, { x: 120, y: 690 }, { x: 280, y: 670 },
+        { x: 140, y: 790 }, { x: 260, y: 810 },
     ];
 
     // ============================================================
@@ -555,16 +904,27 @@
             });
             data = {
                 progress: progress,
-                nutsToday: 0,
-                lastResetDate: new Date().toDateString(),
-                totalSessions: 0
+                nuts: 0,
+                unlockedThemes: [] // массив открытых тем (id)
             };
             saveStorage(data);
         } else {
-            const today = new Date().toDateString();
-            if (data.lastResetDate !== today) {
-                data.nutsToday = 0;
-                data.lastResetDate = today;
+            let needUpdate = false;
+            QUESTION_BANK.forEach(q => {
+                if (!data.progress[q.id]) {
+                    data.progress[q.id] = { box: 1, lastSeen: 0, nextReview: 0, successCount: 0 };
+                    needUpdate = true;
+                }
+            });
+            if (data.nuts === undefined || data.nuts === null || isNaN(data.nuts)) {
+                data.nuts = 0;
+                needUpdate = true;
+            }
+            if (!data.unlockedThemes) {
+                data.unlockedThemes = [];
+                needUpdate = true;
+            }
+            if (needUpdate) {
                 saveStorage(data);
             }
         }
@@ -725,17 +1085,24 @@
     let currentQuestionId = null;
     let isAnswering = false;
     let correctCountInSession = 0;
+    let sessionNutsEarned = 0;
+    let isForestMode = false;
+    let forestCategoryId = null;
+    let animating = false;
 
     // DOM refs
     const mainScreen = document.getElementById('mainScreen');
     const gameScreen = document.getElementById('gameScreen');
     const resultScreen = document.getElementById('resultScreen');
-    const mainMascot = document.getElementById('mainMascot');
-    const fbMascot = document.getElementById('fbMascot');
+    const forestScreen = document.getElementById('forestScreen');
+    const mainWrapper = document.getElementById('mainWrapper');
+    const gameWrapper = document.getElementById('gameWrapper');
     const btnStart = document.getElementById('btnStart');
+    const btnForest = document.getElementById('btnForest');
     const btnHome = document.getElementById('btnHome');
     const btnNext = document.getElementById('btnNext');
     const btnTts = document.getElementById('btnTts');
+    const backFromForest = document.getElementById('backFromForest');
     const progressDots = document.getElementById('progressDots');
     const qIcon = document.getElementById('qIcon');
     const qText = document.getElementById('qText');
@@ -746,93 +1113,103 @@
     const todayDone = document.getElementById('todayDone');
     const resultNuts = document.getElementById('resultNuts');
     const resultStats = document.getElementById('resultStats');
+    const perfectBadge = document.getElementById('perfectBadge');
+    const forestSvg = document.getElementById('forestSvg');
+    const questionArea = document.getElementById('questionArea');
+    const nutIcon = document.getElementById('nutIcon');
 
     // ============================================================
-    //  HELPERS
+    //  СОСТОЯНИЯ МАСКОТА
     // ============================================================
-    function getQuestion(id) {
-        return QUESTION_BANK.find(q => q.id === id);
+    let currentMascotState = 'idle';
+
+    function updateMascot(state) {
+        currentMascotState = state;
+        const srcMap = {
+            idle: 'squirrel_idle.png',
+            win: 'squirrel_win.png',
+            think: 'squirrel_think.png'
+        };
+        const classMap = {
+            idle: 'idle',
+            win: 'happy',
+            think: 'sad'
+        };
+        const src = srcMap[state] || 'squirrel_idle.png';
+        const cls = classMap[state] || 'idle';
+
+        document.querySelectorAll('.mascot-img').forEach(img => {
+            img.src = src;
+        });
+
+        const wrappers = [mainWrapper, gameWrapper];
+        wrappers.forEach(w => {
+            if (w) {
+                w.className = 'mascot-wrapper';
+                w.classList.add(cls);
+            }
+        });
     }
 
-    function getProgress(id) {
-        return appData.progress[id];
+    // ============================================================
+    //  ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕМАМИ
+    // ============================================================
+    function isCategoryUnlocked(categoryId) {
+        return appData.unlockedThemes.includes(categoryId);
     }
 
-    function updateProgress(id, newBox, newNextReview) {
-        const p = appData.progress[id];
-        p.box = newBox;
-        p.nextReview = newNextReview;
-        p.lastSeen = Date.now();
-        if (newBox === 3) p.successCount = (p.successCount || 0) + 1;
-        saveStorage(appData);
+    function getUnlockedCategoryIds() {
+        return appData.unlockedThemes.slice();
     }
 
-    function resetToBox1(id) {
-        const p = appData.progress[id];
-        p.box = 1;
-        p.nextReview = 0;
-        p.lastSeen = Date.now();
-        saveStorage(appData);
-    }
-
-    function addNut() {
-        appData.nutsToday++;
-        saveStorage(appData);
-        updateNutsDisplay();
-    }
-
-    function updateNutsDisplay() {
-        nutsCount.textContent = appData.nutsToday;
-        todayDone.textContent = Math.min(appData.nutsToday, 7);
-    }
-
-    function setMascotAnimation(element, animationClass) {
-        if (!element) return;
-        element.className = 'mascot';
-        if (animationClass) {
-            element.classList.add(animationClass);
-        } else {
-            element.classList.add('idle');
+    // Обновить unlockedThemes на основе прогресса (box > 1 хотя бы у одного вопроса)
+    function refreshUnlockedThemes() {
+        const allIds = Object.keys(CATEGORIES);
+        const newUnlocked = [];
+        for (const key of allIds) {
+            const ids = CATEGORIES[key].ids;
+            let hasSolved = false;
+            for (const id of ids) {
+                if (appData.progress[id] && appData.progress[id].box > 1) {
+                    hasSolved = true;
+                    break;
+                }
+            }
+            if (hasSolved) {
+                newUnlocked.push(key);
+            }
         }
-        if (animationClass) {
-            setTimeout(() => {
-                element.className = 'mascot idle';
-            }, 800);
+        // Сохраняем в порядке тем, чтобы они открывались последовательно
+        const order = ['animals', 'travel', 'food', 'math', 'art', 'space'];
+        const sorted = [];
+        for (const key of order) {
+            if (newUnlocked.includes(key)) sorted.push(key);
         }
+        appData.unlockedThemes = sorted;
+        saveStorage(appData);
     }
 
-    function doTumble(element) {
-        if (!element) return;
-        element.className = 'mascot';
-        element.classList.add('tumble');
-        setTimeout(() => {
-            element.className = 'mascot idle';
-        }, 800);
-    }
-
-    mainMascot.addEventListener('click', function(e) {
-        e.stopPropagation();
-        doTumble(this);
-        playSound('click');
-    });
-
-    fbMascot.addEventListener('click', function(e) {
-        e.stopPropagation();
-        doTumble(this);
-        playSound('click');
-    });
-
     // ============================================================
-    //  CARD SELECTOR ENGINE — теперь строгая проверка уникальности
+    //  CARD SELECTOR ENGINE
     // ============================================================
-    function buildSession() {
+    function buildSession(allowedCategoryIds, limit) {
         const today = Date.now();
-        const allIds = QUESTION_BANK.map(q => q.id);
+        let poolIds = [];
+        if (allowedCategoryIds && allowedCategoryIds.length > 0) {
+            allowedCategoryIds.forEach(catId => {
+                const ids = CATEGORIES[catId].ids;
+                poolIds.push(...ids);
+            });
+        } else {
+            poolIds = QUESTION_BANK.map(q => q.id);
+        }
+        poolIds = [...new Set(poolIds)];
+
         const progress = appData.progress;
 
-        const box1Due = allIds.filter(id => progress[id].box === 1 && progress[id].nextReview <= today);
-        const box2_3Due = allIds.filter(id => (progress[id].box === 2 || progress[id].box === 3) && progress[id].nextReview <= today);
-        const newCards = allIds.filter(id => progress[id].box === 1 && progress[id].nextReview === 0);
+        const box1Due = poolIds.filter(id => progress[id].box === 1 && progress[id].nextReview <= today);
+        const box2_3Due = poolIds.filter(id => (progress[id].box === 2 || progress[id].box === 3) && progress[id].nextReview <= today);
+        const newCards = poolIds.filter(id => progress[id].box === 1 && progress[id].nextReview === 0);
 
         shuffleArray(box1Due);
         shuffleArray(box2_3Due);
@@ -840,13 +1217,11 @@
 
         let selected = [];
 
-        // Добавляем до 2 из box1Due (уникальные)
         for (const id of box1Due) {
             if (selected.length >= 2) break;
             if (!selected.includes(id)) selected.push(id);
         }
 
-        // Добавляем 1 из box2_3Due (если есть)
         for (const id of box2_3Due) {
             if (!selected.includes(id)) {
                 selected.push(id);
@@ -854,7 +1229,6 @@
             }
         }
 
-        // Если после этого меньше 2 из box1Due, добиваем из box1Due (если остались)
         if (selected.length < 2) {
             for (const id of box1Due) {
                 if (selected.length >= 2) break;
@@ -862,17 +1236,15 @@
             }
         }
 
-        // Теперь добиваем новыми до 7
         for (const id of newCards) {
-            if (selected.length >= 7) break;
+            if (selected.length >= (limit || 7)) break;
             if (!selected.includes(id)) selected.push(id);
         }
 
-        // Если всё ещё меньше 7, добиваем из всех неиспользованных
-        if (selected.length < 7) {
-            const unused = allIds.filter(id => !selected.includes(id));
+        if (selected.length < (limit || 7)) {
+            const unused = poolIds.filter(id => !selected.includes(id));
             shuffleArray(unused);
-            const need = 7 - selected.length;
+            const need = (limit || 7) - selected.length;
             selected.push(...unused.slice(0, need));
         }
 
@@ -889,7 +1261,93 @@
     }
 
     // ============================================================
-    //  RENDER
+    //  FOREST — render
+    // ============================================================
+    function renderForest() {
+        const svg = forestSvg;
+        while (svg.children.length > 1) {
+            svg.removeChild(svg.lastChild);
+        }
+
+        DECORATIVE_TREES.forEach(tree => {
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', tree.x);
+            text.setAttribute('y', tree.y);
+            text.setAttribute('class', 'forest-tree');
+            text.textContent = '🌲';
+            svg.appendChild(text);
+        });
+
+        Object.values(CATEGORIES).forEach((cat) => {
+            const unlocked = isCategoryUnlocked(cat.id);
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.setAttribute('class', 'forest-spot-group');
+            group.setAttribute('data-category', cat.id);
+            group.style.zIndex = 10;
+
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', cat.x);
+            circle.setAttribute('cy', cat.y);
+            circle.setAttribute('r', '30');
+            circle.setAttribute('class', 'forest-spot-circle');
+            circle.setAttribute('fill', unlocked ? cat.color : '#555555');
+            if (!unlocked) {
+                circle.setAttribute('opacity', '0.6');
+                const lock = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                lock.setAttribute('x', cat.x);
+                lock.setAttribute('y', cat.y + 70);
+                lock.setAttribute('class', 'forest-spot-label');
+                lock.setAttribute('fill', '#aaa');
+                lock.textContent = '🔒';
+                group.appendChild(lock);
+            }
+            group.appendChild(circle);
+
+            const iconText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            iconText.setAttribute('x', cat.x);
+            iconText.setAttribute('y', cat.y);
+            iconText.setAttribute('class', 'forest-spot-text');
+            iconText.setAttribute('font-size', '26px');
+            iconText.textContent = cat.icon;
+            group.appendChild(iconText);
+
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', cat.x);
+            label.setAttribute('y', cat.y + 48);
+            label.setAttribute('class', 'forest-spot-label');
+            label.textContent = cat.name;
+            group.appendChild(label);
+
+            if (!unlocked) {
+                group.style.cursor = 'default';
+            } else {
+                group.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    startForestSession(cat.id);
+                });
+            }
+
+            svg.appendChild(group);
+        });
+    }
+
+    function startForestSession(categoryId) {
+        const cat = CATEGORIES[categoryId];
+        if (!cat || cat.ids.length === 0) {
+            speakText('В этой теме пока нет вопросов');
+            return;
+        }
+        if (!isCategoryUnlocked(categoryId)) {
+            speakText('Эта тема пока закрыта! Решай задачи, чтобы открыть её.');
+            return;
+        }
+        isForestMode = true;
+        forestCategoryId = categoryId;
+        startSession([categoryId], 7);
+    }
+
+    // ============================================================
+    //  RENDER GAME
     // ============================================================
     function renderQuestion() {
         if (sessionQueue.length === 0) {
@@ -907,6 +1365,10 @@
         }
 
         updateDots();
+
+        optionsContainer.classList.remove('disabled');
+        questionArea.classList.remove('slide-up');
+        void questionArea.offsetWidth;
 
         qIcon.textContent = q.icon || '🧐';
         qText.textContent = q.question;
@@ -934,13 +1396,18 @@
         });
 
         feedbackArea.style.display = 'flex';
-        fbMascot.textContent = '🐿️';
+        updateMascot('think');
         fbFact.textContent = '';
         btnNext.classList.remove('show');
         btnNext.style.display = 'none';
         isAnswering = false;
+        animating = false;
 
         speakText(q.question);
+    }
+
+    function getQuestion(id) {
+        return QUESTION_BANK.find(q => q.id === id);
     }
 
     function updateDots() {
@@ -960,8 +1427,10 @@
     //  ANSWER HANDLING
     // ============================================================
     function handleAnswer(selectedIndex) {
-        if (isAnswering) return;
+        if (isAnswering || animating) return;
         if (sessionQueue.length === 0) return;
+
+        optionsContainer.classList.add('disabled');
 
         isAnswering = true;
         const id = sessionQueue[0];
@@ -979,15 +1448,20 @@
         if (isCorrect) {
             playSound('correct');
             buttons[selectedIndex].classList.add('correct');
-            fbMascot.textContent = '🎉';
             fbFact.textContent = q.funFact;
-            setMascotAnimation(fbMascot, 'happy');
+            updateMascot('win');
             fireConfetti(40);
 
             speakSequence(['Молодец!', q.funFact]);
 
+            questionArea.classList.add('slide-up');
+
             btnNext.style.display = 'block';
             btnNext.classList.add('show');
+            btnNext.style.pointerEvents = 'none';
+            setTimeout(() => {
+                btnNext.style.pointerEvents = 'auto';
+            }, 500);
 
             let newBox = progress.box;
             if (newBox === 1) newBox = 2;
@@ -1007,24 +1481,26 @@
         } else {
             playSound('wrong');
             buttons[selectedIndex].classList.add('wrong');
-            fbMascot.textContent = '🤔';
             fbFact.textContent = 'Не беда! Давай запомним правильный ответ.';
             speakText('Не беда! Давай запомним правильный ответ.');
-            setMascotAnimation(fbMascot, 'sad');
+            updateMascot('think');
             if (navigator.vibrate) navigator.vibrate(30);
 
             resetToBox1(id);
 
             sessionQueue.shift();
-            // Если это был последний вопрос — не добавляем обратно
             if (sessionQueue.length > 0) {
                 sessionQueue.push(id);
             }
 
+            questionArea.classList.add('slide-up');
+
+            btnNext.style.display = 'block';
+            btnNext.classList.add('show');
+            btnNext.style.pointerEvents = 'none';
             setTimeout(() => {
-                btnNext.style.display = 'block';
-                btnNext.classList.add('show');
-            }, 1500);
+                btnNext.style.pointerEvents = 'auto';
+            }, 500);
         }
 
         btnNext.onclick = () => {
@@ -1046,47 +1522,203 @@
     function finishSession() {
         playSound('complete');
         fireConfetti(100);
+
         gameScreen.classList.remove('active');
         resultScreen.classList.add('active');
-        resultNuts.textContent = correctCountInSession;
+
+        resultNuts.textContent = sessionNutsEarned;
         resultStats.textContent = `Ты правильно ответил на ${correctCountInSession} из 7 вопросов!`;
+
+        if (correctCountInSession === 7) {
+            perfectBadge.style.display = 'block';
+        } else {
+            perfectBadge.style.display = 'none';
+        }
+
+        resultScreen.classList.add('bounce-in');
+        setTimeout(() => {
+            resultScreen.classList.remove('bounce-in');
+        }, 700);
+
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => {
+                const nut = document.createElement('div');
+                nut.className = 'nut-firework';
+                nut.textContent = '🥜';
+                const x = 40 + Math.random() * 20;
+                const y = 20 + Math.random() * 60;
+                const tx = (Math.random() - 0.5) * 300;
+                const ty = (Math.random() - 0.5) * 300;
+                nut.style.left = x + '%';
+                nut.style.top = y + '%';
+                nut.style.setProperty('--tx', tx + 'px');
+                nut.style.setProperty('--ty', ty + 'px');
+                nut.style.fontSize = (1.5 + Math.random() * 2) + 'rem';
+                document.body.appendChild(nut);
+                setTimeout(() => nut.remove(), 1500);
+            }, i * 80);
+        }
+
         speakText('Отлично! Ты молодец!');
-        setMascotAnimation(document.querySelector('.result-icon'), 'celebrate');
+        updateMascot('win');
+        const resultIcon = document.querySelector('.result-icon');
+        if (resultIcon) {
+            resultIcon.className = 'result-icon';
+            resultIcon.classList.add('celebrate');
+        }
+
+        // Обновляем открытые темы
+        refreshUnlockedThemes();
+
+        sessionNutsEarned = 0;
+        updateNutDisplay();
+
+        if (isForestMode) {
+            isForestMode = false;
+            forestCategoryId = null;
+            setTimeout(() => {
+                resultScreen.classList.remove('active');
+                forestScreen.classList.add('active');
+                updateMascot('idle');
+            }, 3000);
+        }
+    }
+
+    function getProgress(id) {
+        return appData.progress[id];
+    }
+
+    function updateProgress(id, newBox, newNextReview) {
+        const p = appData.progress[id];
+        p.box = newBox;
+        p.nextReview = newNextReview;
+        p.lastSeen = Date.now();
+        if (newBox === 3) p.successCount = (p.successCount || 0) + 1;
+        saveStorage(appData);
+    }
+
+    function resetToBox1(id) {
+        const p = appData.progress[id];
+        p.box = 1;
+        p.nextReview = 0;
+        p.lastSeen = Date.now();
+        saveStorage(appData);
+    }
+
+    function addNut() {
+        if (typeof appData.nuts !== 'number' || isNaN(appData.nuts)) appData.nuts = 0;
+        appData.nuts++;
+        sessionNutsEarned++;
+        saveStorage(appData);
+        updateNutDisplay();
+        nutIcon.classList.remove('nut-pop');
+        void nutIcon.offsetWidth;
+        nutIcon.classList.add('nut-pop');
+        setTimeout(() => {
+            nutIcon.classList.remove('nut-pop');
+        }, 500);
+    }
+
+    function updateNutDisplay() {
+        const nuts = isNaN(appData.nuts) ? 0 : appData.nuts;
+        nutsCount.textContent = nuts;
+    }
+
+    function refreshAllMascots() {
+        updateMascot(currentMascotState);
     }
 
     // ============================================================
     //  START SESSION
     // ============================================================
-    function startSession() {
+    function startSession(allowedCategoryIds, limit) {
         playSound('click');
-        sessionQueue = buildSession();
+        let categoryIds = allowedCategoryIds;
+        if (!categoryIds) {
+            const unlocked = getUnlockedCategoryIds();
+            if (unlocked.length > 0) {
+                categoryIds = unlocked;
+            } else {
+                // Если ни одна тема не открыта, используем только первую тему (animals) для старта
+                categoryIds = ['animals'];
+            }
+        }
+        // Если limit не передан, определяем: если открыто 0 тем, то 5 вопросов, иначе 7
+        if (limit === undefined) {
+            const unlocked = getUnlockedCategoryIds();
+            if (unlocked.length === 0) {
+                limit = 5;
+            } else {
+                limit = 7;
+            }
+        }
+        sessionQueue = buildSession(categoryIds, limit);
         correctCountInSession = 0;
+        sessionNutsEarned = 0;
         isAnswering = false;
+        animating = false;
 
         mainScreen.classList.remove('active');
         gameScreen.classList.add('active');
         resultScreen.classList.remove('active');
+        forestScreen.classList.remove('active');
 
         renderQuestion();
-        updateNutsDisplay();
-        setMascotAnimation(fbMascot, 'idle');
+        updateNutDisplay();
+    }
+
+    // ============================================================
+    //  SCREEN SWITCHING
+    // ============================================================
+    function showMainScreen() {
+        mainScreen.classList.add('active');
+        gameScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        forestScreen.classList.remove('active');
+        updateNutDisplay();
+        refreshAllMascots();
+        updateMascot('idle');
+        isForestMode = false;
+    }
+
+    function showForestScreen() {
+        mainScreen.classList.remove('active');
+        gameScreen.classList.remove('active');
+        resultScreen.classList.remove('active');
+        forestScreen.classList.add('active');
+        renderForest();
+        updateNutDisplay();
+        refreshAllMascots();
+        updateMascot('idle');
+        const container = document.getElementById('forestContainer');
+        if (container) container.scrollTop = 0;
     }
 
     // ============================================================
     //  EVENT LISTENERS
     // ============================================================
-    btnStart.addEventListener('click', startSession);
+    btnStart.addEventListener('click', () => {
+        isForestMode = false;
+        startSession(null);
+    });
+
+    btnForest.addEventListener('click', () => {
+        playSound('click');
+        showForestScreen();
+    });
 
     btnHome.addEventListener('click', () => {
         playSound('click');
-        resultScreen.classList.remove('active');
-        mainScreen.classList.add('active');
-        updateNutsDisplay();
-        sessionQueue = [];
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
         }
-        setMascotAnimation(mainMascot, 'idle');
+        sessionQueue = [];
+        showMainScreen();
+    });
+
+    backFromForest.addEventListener('click', () => {
+        playSound('click');
+        showMainScreen();
     });
 
     btnTts.addEventListener('click', () => {
@@ -1100,9 +1732,10 @@
     });
 
     // Инициализация
-    updateNutsDisplay();
-    setMascotAnimation(mainMascot, 'idle');
-    console.log('🐿️ Nutcracker готов — дубликатов в сессии больше нет!');
+    updateNutDisplay();
+    refreshAllMascots();
+    updateMascot('idle');
+    console.log('🐿️ Nutcracker – исправлено: при первом запуске 5 простых вопросов, темы открываются последовательно, скролл работает!');
 </script>
 </body>
 </html>
