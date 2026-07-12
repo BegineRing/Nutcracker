@@ -1,1741 +1,2494 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutcracker — Викторина для детей</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>VampStep · Кровавая миссия</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Special+Elite&display=swap" rel="stylesheet" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        :root {
-            --bg: #1a2a3a;
-            --card-bg: #2c4054;
-            --gold: #f7c948;
-            --green: #6fcf97;
-            --red: #eb5757;
-            --text: #f0f4fa;
-            --shadow: 0 8px 32px rgba(0,0,0,0.4);
-            --radius: 28px;
-        }
+        * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; }
         body {
-            font-family: 'Segoe UI', 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-            background: var(--bg);
-            color: var(--text);
             min-height: 100vh;
+            background: #0a0608;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 12px;
+            font-family: 'Cinzel', 'Courier New', serif;
+            color: #c8b0b0;
             overflow: hidden;
-        }
-        #app {
-            max-width: 480px;
-            width: 100%;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
             position: relative;
-            overflow: hidden;
-            height: 100vh;
-            max-height: 780px;
-            display: flex;
-            flex-direction: column;
-            padding: 12px 16px 12px;
+            touch-action: manipulation;
         }
-        .screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            animation: fadeIn 0.5s ease;
-            width: 100%;
-            flex: 1 0 auto;
-            min-height: 0;
-        }
-        .screen.active {
-            display: flex;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .mascot-wrapper {
-            display: inline-block;
-            position: relative;
-            cursor: pointer;
-            user-select: none;
-            line-height: 1;
-            transition: transform 0.3s ease;
-            flex-shrink: 0;
-        }
-        .mascot-wrapper.idle {
-            animation: float 3s ease-in-out infinite;
-        }
-        .mascot-wrapper.happy {
-            animation: bounceHappy 0.6s ease;
-        }
-        .mascot-wrapper.sad {
-            animation: shakeSad 0.6s ease;
-        }
-        .mascot-wrapper.celebrate {
-            animation: celebrate 0.8s ease infinite alternate;
-        }
-        .mascot-wrapper.tumble {
-            animation: tumble 0.8s ease forwards;
-        }
-        .mascot-img {
-            max-height: 150px;
-            width: auto;
-            object-fit: contain;
-            display: block;
-            margin: 0 auto;
+        #bgCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.4; }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(80, 0, 20, 0.2) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(40, 0, 10, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(60, 0, 15, 0.1) 0%, transparent 50%);
+            z-index: 0;
             pointer-events: none;
         }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        @keyframes bounceHappy {
-            0% { transform: scale(1); }
-            30% { transform: scale(1.3) rotate(-8deg); }
-            60% { transform: scale(0.9) rotate(4deg); }
-            100% { transform: scale(1) rotate(0); }
-        }
-        @keyframes shakeSad {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-8px) rotate(-3deg); }
-            40% { transform: translateX(8px) rotate(3deg); }
-            60% { transform: translateX(-4px); }
-            80% { transform: translateX(4px); }
-        }
-        @keyframes celebrate {
-            0% { transform: rotate(-4deg) scale(1); }
-            100% { transform: rotate(4deg) scale(1.05); }
-        }
-        @keyframes tumble {
-            0% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(-15deg) scale(1.1) translateY(-15px); }
-            50% { transform: rotate(0deg) scale(0.9) translateY(0px); }
-            75% { transform: rotate(15deg) scale(1.1) translateY(-10px); }
-            100% { transform: rotate(0deg) scale(1) translateY(0); }
-        }
-        .question-area.slide-up {
-            animation: slideUpOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        @keyframes slideUpOut {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-60px) scale(0.85); }
-        }
-        .title {
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: var(--gold);
-            text-shadow: 0 4px 12px rgba(247, 201, 72, 0.3);
-            letter-spacing: 1px;
-            flex-shrink: 0;
-            margin-top: -2px;
-        }
-        .subtitle {
-            font-size: 0.85rem;
-            opacity: 0.8;
-            font-weight: 500;
-            flex-shrink: 0;
-            margin-top: -6px;
-        }
-        .nuts-counter {
-            background: rgba(255,255,255,0.08);
-            border-radius: 60px;
-            padding: 6px 18px;
+
+        /* ===== ИНТРО / ПОБЕДА (overlay) ===== */
+        .intro-overlay, .victory-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,255,255,0.06);
-            flex-shrink: 0;
-            margin-top: 2px;
+            justify-content: center;
+            background: rgba(4, 0, 4, 0.96);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 20px;
+            transition: opacity 0.6s ease;
+            opacity: 0;
+            pointer-events: none;
         }
-        .nuts-counter span {
-            color: var(--gold);
+        .intro-overlay.show, .victory-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
         }
-        .btn-start {
-            background: linear-gradient(135deg, var(--gold), #f5a623);
-            border: none;
-            border-radius: 60px;
-            padding: 16px 32px;
-            font-size: 2rem;
-            font-weight: 800;
-            color: #1a2a3a;
-            cursor: pointer;
-            box-shadow: 0 8px 24px rgba(247, 201, 72, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-            letter-spacing: 2px;
+        .intro-overlay .content, .victory-overlay .content {
+            max-width: 720px;
             width: 100%;
-            max-width: 280px;
-            animation: pulse-start 2s infinite;
+            text-align: center;
+            padding: 10px 0;
             position: relative;
-            overflow: hidden;
-            flex-shrink: 0;
-            margin-top: 4px;
         }
-        .btn-start:active {
-            transform: scale(0.94);
-            box-shadow: 0 4px 12px rgba(247, 201, 72, 0.2);
-            animation: none;
+        .intro-overlay h1, .victory-overlay h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 52px;
+            font-weight: 900;
+            color: #e8c0c0;
+            text-shadow: 0 0 80px rgba(160, 30, 30, 0.5), 0 0 160px rgba(80, 0, 0, 0.2);
+            letter-spacing: 6px;
+            margin-bottom: 6px;
         }
-        .btn-start::after {
+        .intro-overlay h2, .victory-overlay h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            font-weight: 400;
+            color: #b09090;
+            letter-spacing: 3px;
+            border-top: 1px solid rgba(120, 60, 60, 0.2);
+            border-bottom: 1px solid rgba(120, 60, 60, 0.2);
+            padding: 10px 0;
+            margin: 4px auto 16px;
+            display: inline-block;
+            text-shadow: 0 0 20px rgba(120, 40, 40, 0.1);
+        }
+        .vamp-text {
+            font-family: 'Special Elite', 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.7;
+            color: #c8b8b8;
+            background: rgba(10, 6, 8, 0.6);
+            padding: 18px 22px;
+            border-radius: 12px;
+            border: 1px solid rgba(80, 40, 40, 0.15);
+            box-shadow: inset 0 0 60px rgba(20, 0, 0, 0.3);
+            text-align: left;
+            max-width: 650px;
+            margin: 0 auto 22px;
+        }
+        .vamp-text strong {
+            color: #e0b0b0;
+            font-weight: 700;
+        }
+        .vamp-btn {
+            background: rgba(20, 8, 10, 0.85);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 2px solid rgba(160, 60, 60, 0.5);
+            color: #f0d0d0;
+            padding: 14px 48px;
+            border-radius: 60px;
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 0 60px rgba(120, 30, 30, 0.15), inset 0 0 30px rgba(20, 0, 0, 0.2);
+            touch-action: manipulation;
+            min-width: 200px;
+        }
+        .vamp-btn:hover {
+            background: rgba(40, 12, 16, 0.9);
+            border-color: rgba(200, 80, 80, 0.6);
+            transform: scale(1.02);
+            box-shadow: 0 0 80px rgba(160, 40, 40, 0.3);
+        }
+        .vamp-btn:active { transform: scale(0.96); }
+        .victory-overlay .vamp-text {
+            text-align: center;
+            max-width: 550px;
+        }
+        .hidden { display: none !important; }
+
+        /* ===== ОСТАЛЬНАЯ СТИЛИЗАЦИЯ (без изменений) ===== */
+        #app {
+            position: relative;
+            z-index: 1;
+            background: rgba(14, 8, 12, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 8px 10px 12px 10px;
+            border-radius: 28px;
+            box-shadow: 0 0 120px rgba(40, 0, 20, 0.7), 0 0 60px rgba(80, 0, 20, 0.2), inset 0 0 80px rgba(30, 0, 15, 0.3);
+            border: 1px solid rgba(80, 30, 40, 0.4);
+            width: 100%;
+            max-width: 820px;
+            transition: all 0.3s;
+        }
+        #app::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
-            opacity: 0;
-            transition: opacity 0.3s;
+            inset: -2px;
+            border-radius: 30px;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(120, 30, 40, 0.3), rgba(40, 10, 20, 0.1), rgba(120, 30, 40, 0.2));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            z-index: 0;
         }
-        .btn-forest {
-            background: rgba(111, 207, 151, 0.15);
-            border: 1px solid rgba(111, 207, 151, 0.2);
+        #app::after {
+            content: '';
+            position: absolute;
+            top: -30%;
+            left: -30%;
+            width: 160%;
+            height: 160%;
+            background: radial-gradient(circle at 40% 30%, rgba(100, 0, 30, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            animation: glowPulse 12s ease-in-out infinite alternate;
+            z-index: 0;
+            border-radius: 28px;
         }
-        .btn-secondary {
-            background: rgba(255,255,255,0.08);
-            border: none;
-            border-radius: 60px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            width: 100%;
-            max-width: 280px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-        .btn-secondary:active {
-            transform: scale(0.94);
-            background: rgba(255,255,255,0.15);
-        }
-        .btn-secondary-group {
+        @keyframes glowPulse { 0% { opacity: 0.3; transform: scale(1) rotate(0deg); } 100% { opacity: 0.7; transform: scale(1.15) rotate(4deg); } }
+
+        .header {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 6px;
-            width: 100%;
-            max-width: 280px;
-            margin-top: 2px;
-            flex-shrink: 0;
+            justify-content: space-between;
+            gap: 4px 8px;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
+            flex-wrap: nowrap;
         }
-        .today-progress {
-            font-size: 0.7rem;
-            opacity: 0.4;
-            margin-top: 4px;
+        .header-left { display: flex; align-items: center; flex: 0 0 auto; }
+        .header-center { display: flex; align-items: center; justify-content: center; gap: 12px; flex: 1 1 auto; min-width: 0; }
+        .header-right { display: flex; align-items: center; flex: 0 0 auto; }
+
+        .btn-menu {
+            background: rgba(10, 6, 8, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(60, 30, 30, 0.35);
+            color: #c0b0b0;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
             letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: inset 0 0 20px rgba(20, 0, 0, 0.2);
+            white-space: nowrap;
+            touch-action: manipulation;
             flex-shrink: 0;
         }
-        .game-header {
+        .btn-menu:hover { background: rgba(20, 10, 12, 0.8); border-color: rgba(120, 60, 60, 0.5); color: #f0e0e0; box-shadow: 0 0 40px rgba(80, 0, 20, 0.15); transform: translateY(-1px); }
+        .btn-menu:active { transform: scale(0.96); }
+
+        .mode-display {
+            background: rgba(10, 6, 8, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            padding: 6px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(80, 40, 40, 0.3);
+            font-size: 26px;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-align: center;
+            color: #b08080;
+            box-shadow: inset 0 0 20px rgba(20, 0, 0, 0.2);
+            font-family: 'Cinzel', serif;
+            transition: all 0.4s;
+            white-space: nowrap;
+            line-height: 1.2;
+            flex: 1 1 0;
+            min-width: 0;
+        }
+        .mode-display.rook { border-color: rgba(160, 80, 80, 0.5); color: #d0a0a0; text-shadow: 0 0 20px rgba(160, 60, 60, 0.3); }
+        .mode-display.bishop { border-color: rgba(200, 100, 100, 0.5); color: #e0b0b0; text-shadow: 0 0 30px rgba(200, 80, 80, 0.3); }
+        .mode-display .icon { font-size: 34px; margin-right: 4px; display: inline-block; }
+        .mode-display .label { font-size: 14px; letter-spacing: 1px; opacity: 0.7; display: block; font-weight: 400; }
+
+        .timer-wrapper {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            flex: 0 0 auto;
+        }
+        .timer-wrapper svg { transform: rotate(-90deg); width: 76px; height: 76px; }
+        .timer-wrapper .bg { fill: none; stroke: rgba(60, 30, 30, 0.3); stroke-width: 4; }
+        .timer-wrapper .progress {
+            fill: none;
+            stroke: #cc4444;
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease, stroke 0.3s;
+            filter: drop-shadow(0 0 14px rgba(200, 40, 40, 0.5));
+        }
+        .timer-wrapper .progress.warning { stroke: #ff2222; filter: drop-shadow(0 0 28px rgba(255, 30, 30, 0.8)); animation: pulseStroke 0.5s infinite alternate; }
+        @keyframes pulseStroke { 0% { opacity: 1; } 100% { opacity: 0.3; } }
+        .timer-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: #dd8888;
+            font-family: 'Cinzel', serif;
+            text-shadow: 0 0 30px rgba(180, 40, 40, 0.6), 0 0 60px rgba(200, 40, 40, 0.2);
+            letter-spacing: 1px;
+        }
+        .timer-text.warning { color: #ff5555; text-shadow: 0 0 50px rgba(255, 30, 30, 0.8), 0 0 100px rgba(200, 0, 0, 0.4); animation: pulseText 0.5s infinite alternate; }
+        @keyframes pulseText { 0% { opacity: 1; } 100% { opacity: 0.4; } }
+
+        .info-badge {
+            background: rgba(10, 6, 8, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            padding: 6px 14px 6px 18px;
+            border-radius: 40px;
+            border: 1px solid rgba(80, 40, 40, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            box-shadow: inset 0 0 30px rgba(20, 0, 0, 0.2);
+            white-space: nowrap;
+            flex: 1 1 0;
+            min-width: 0;
+            justify-content: center;
+        }
+        .info-badge .value {
+            font-weight: 900;
+            font-size: 38px;
+            color: #e0b0b0;
+            font-family: 'Cinzel', serif;
+            min-width: 30px;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(180, 60, 60, 0.4);
+            line-height: 1;
+        }
+        .info-badge .value.danger { color: #ff5555; text-shadow: 0 0 40px rgba(255, 40, 40, 0.6); animation: pulseText 0.6s infinite alternate; }
+        .info-badge .label { color: #907070; font-size: 16px; text-transform: lowercase; letter-spacing: 1px; font-weight: 400; }
+
+        .level-indicator {
+            color: #807070;
+            font-size: 12px;
+            letter-spacing: 1.2px;
+            font-weight: 400;
+            font-family: 'Cinzel', serif;
+            background: rgba(10, 6, 8, 0.4);
+            padding: 3px 10px;
+            border-radius: 40px;
+            border: 1px solid rgba(50, 30, 30, 0.2);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .canvas-wrap {
+            position: relative;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.9), 0 0 60px rgba(40, 0, 20, 0.3), 0 0 120px rgba(20, 0, 10, 0.2);
+            border: 1px solid rgba(60, 30, 30, 0.2);
+        }
+        #gameCanvas {
+            display: block;
             width: 100%;
+            height: auto;
+            aspect-ratio: 1/1;
+            image-rendering: auto;
+            position: relative;
+            z-index: 2;
+            background: #0a0608;
+            touch-action: none;
+            cursor: crosshair;
+        }
+        .flash-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: rgba(120, 0, 0, 0);
+            border-radius: 14px;
+            transition: background 0.05s;
+            z-index: 10;
+        }
+        .flash-overlay.active { background: rgba(160, 0, 0, 0.2); transition: background 0s; }
+        .fog-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(ellipse at 30% 80%, rgba(30, 0, 10, 0.15) 0%, transparent 60%),
+                       radial-gradient(ellipse at 70% 20%, rgba(20, 0, 8, 0.1) 0%, transparent 50%);
+            border-radius: 14px;
+            z-index: 5;
+            opacity: 0.6;
+        }
+
+        .game-over-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 20;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            pointer-events: auto;
+            animation: fadeIn 0.4s ease;
+        }
+        .game-over-overlay.show { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .game-over-overlay .result-text {
+            font-family: 'Cinzel', serif;
+            font-size: 48px;
+            font-weight: 900;
+            color: #aa2222;
+            text-shadow: 0 0 40px rgba(150, 0, 0, 0.6);
+            letter-spacing: 4px;
+            margin-bottom: 16px;
+        }
+        .game-over-overlay .result-text.win { color: #cc3333; text-shadow: 0 0 60px rgba(200, 50, 50, 0.6); }
+        .game-over-overlay .result-text.lose { color: #882222; text-shadow: 0 0 40px rgba(120, 0, 0, 0.4); }
+        .game-over-overlay .btn-big {
+            background: rgba(30, 10, 12, 0.9);
+            border: 2px solid rgba(160, 60, 60, 0.5);
+            color: #f0d0d0;
+            padding: 12px 40px;
+            border-radius: 60px;
+            font-family: 'Cinzel', serif;
+            font-size: 22px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 0 40px rgba(120, 30, 30, 0.2), inset 0 0 20px rgba(20, 0, 0, 0.2);
+            touch-action: manipulation;
+            min-width: 170px;
+        }
+        .game-over-overlay .btn-big:hover { background: rgba(50, 15, 18, 0.95); border-color: rgba(200, 80, 80, 0.6); transform: scale(1.02); box-shadow: 0 0 60px rgba(160, 40, 40, 0.3); }
+        .game-over-overlay .btn-big:active { transform: scale(0.96); }
+
+        .menu-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(4, 0, 4, 0.94);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            z-index: 30;
+            border-radius: 14px;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            border: 1px solid rgba(80, 30, 30, 0.08);
+            box-shadow: inset 0 0 120px rgba(40, 0, 10, 0.3);
+        }
+        .menu-overlay.show { opacity: 1; pointer-events: auto; }
+        .menu-content { width: 100%; max-width: 480px; text-align: center; padding: 4px 0; }
+        .menu-title {
+            font-size: 24px;
+            font-weight: 900;
+            color: #e8c0c0;
+            text-shadow: 0 0 60px rgba(160, 40, 40, 0.3), 0 0 120px rgba(80, 0, 0, 0.2);
+            letter-spacing: 3px;
+            margin-bottom: 4px;
+        }
+        .menu-title .blood { color: #cc3333; text-shadow: 0 0 40px rgba(200, 30, 30, 0.4); }
+        .menu-sub { font-size: 12px; color: #a08080; letter-spacing: 1.5px; border-top: 1px solid rgba(80, 40, 40, 0.15); padding-top: 10px; margin-top: 4px; margin-bottom: 14px; font-weight: 400; }
+        .menu-levels { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 12px; }
+        .menu-level-btn {
+            background: rgba(20, 10, 12, 0.6);
+            border: 1px solid rgba(60, 40, 40, 0.25);
+            border-radius: 40px;
+            padding: 10px 16px;
+            color: #c8b8b8;
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 2px;
-            flex-shrink: 0;
+            letter-spacing: 0.5px;
+            touch-action: manipulation;
         }
-        .progress-dots {
-            display: flex;
-            gap: 6px;
-        }
-        .dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            transition: all 0.3s;
-        }
-        .dot.done {
-            background: var(--green);
-            transform: scale(1.1);
-        }
-        .dot.current {
-            background: var(--gold);
-            box-shadow: 0 0 20px rgba(247, 201, 72, 0.4);
-            transform: scale(1.2);
-        }
-        .question-area {
-            width: 100%;
-            background: rgba(0,0,0,0.2);
-            border-radius: 20px;
-            padding: 10px 14px;
-            text-align: center;
-            min-height: 80px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            position: relative;
-            flex-shrink: 0;
-        }
-        .question-icon {
-            font-size: 2.4rem;
-            margin-bottom: 2px;
-        }
-        .question-text {
-            font-size: 1.15rem;
-            font-weight: 600;
-            line-height: 1.3;
-            max-width: 90%;
-        }
-        .btn-tts {
-            position: absolute;
-            top: 4px;
-            right: 8px;
-            background: rgba(255,255,255,0.08);
-            border: none;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            font-size: 1.3rem;
+        .menu-level-btn:hover { background: rgba(40, 20, 24, 0.7); border-color: rgba(120, 60, 60, 0.4); transform: translateX(4px); box-shadow: 0 0 30px rgba(80, 0, 20, 0.08); }
+        .menu-level-btn .level-num { color: #d0a0a0; font-size: 12px; font-weight: 400; opacity: 0.7; }
+        .menu-level-btn .level-name { flex: 1; text-align: left; padding-left: 12px; color: #e0c8c8; }
+        .menu-level-btn .level-diff { font-size: 10px; padding: 2px 10px; border-radius: 30px; background: rgba(60, 30, 30, 0.2); color: #b09090; }
+        .menu-level-btn .level-diff.hard { color: #e08080; background: rgba(120, 40, 40, 0.2); }
+        .menu-level-btn .level-diff.easy { color: #80b080; background: rgba(40, 80, 40, 0.15); }
+        .menu-level-btn .level-diff.medium { color: #d0b080; background: rgba(120, 80, 40, 0.15); }
+        .menu-level-btn.active { border-color: rgba(160, 80, 80, 0.5); background: rgba(60, 20, 24, 0.6); box-shadow: 0 0 40px rgba(120, 30, 30, 0.08); }
+        .menu-actions { display: flex; gap: 10px; justify-content: center; margin-top: 8px; flex-wrap: wrap; }
+        .menu-close-btn, .menu-editor-btn {
+            background: rgba(10, 6, 8, 0.6);
+            border: 1px solid rgba(60, 30, 30, 0.25);
+            color: #b0a0a0;
+            padding: 6px 24px;
+            border-radius: 40px;
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
             cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--gold);
+            transition: 0.2s;
+            touch-action: manipulation;
         }
-        .btn-tts:active {
-            background: rgba(255,255,255,0.2);
-            transform: scale(0.9);
-        }
-        .options {
-            width: 100%;
+        .menu-close-btn:hover, .menu-editor-btn:hover { background: rgba(30, 16, 18, 0.7); border-color: rgba(100, 60, 60, 0.3); color: #f0e0e0; }
+        .menu-editor-btn { border-color: rgba(160, 80, 80, 0.3); color: #d0a0a0; }
+        .menu-editor-btn:hover { border-color: rgba(200, 100, 100, 0.5); }
+
+        .editor-panel {
+            background: rgba(10, 6, 8, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-top: 8px;
             display: flex;
             flex-direction: column;
             gap: 8px;
-            margin-top: 4px;
-            transition: opacity 0.2s, pointer-events 0.2s;
-            flex: 1 1 auto;
-            min-height: 0;
-            justify-content: center;
-        }
-        .options.disabled {
-            pointer-events: none;
-            opacity: 0.8;
-        }
-        .option-btn {
-            background: rgba(255,255,255,0.06);
-            border: 2px solid rgba(255,255,255,0.08);
-            border-radius: 60px;
-            padding: 12px 16px;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-            backdrop-filter: blur(2px);
-            text-align: left;
-            min-height: 54px;
+            border: 1px solid rgba(60, 30, 30, 0.25);
+            box-shadow: inset 0 0 40px rgba(20, 0, 0, 0.2);
             position: relative;
+            z-index: 2;
         }
-        .option-btn:active:not(.disabled) {
-            transform: scale(0.95);
-        }
-        .option-btn .opt-icon {
-            font-size: 1.8rem;
-            flex-shrink: 0;
-            color: var(--gold);
-            font-weight: 700;
-            width: 2rem;
-            text-align: center;
-        }
-        .option-btn .opt-label {
-            flex: 1;
-        }
-        .option-btn .opt-speak {
-            background: rgba(255,255,255,0.06);
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
+        .editor-row {
             display: flex;
+            flex-wrap: wrap;
+            gap: 6px 10px;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
-            color: var(--gold);
         }
-        .option-btn .opt-speak:active {
-            background: rgba(255,255,255,0.15);
-            transform: scale(0.85);
-        }
-        .option-btn.correct {
-            background: rgba(111, 207, 151, 0.25);
-            border-color: var(--green);
-            box-shadow: 0 0 30px rgba(111, 207, 151, 0.3);
-            transform: scale(1.02);
-        }
-        .option-btn.wrong {
-            background: rgba(235, 87, 87, 0.15);
-            border-color: var(--red);
-            opacity: 0.6;
-            transform: scale(0.95);
-        }
-        .option-btn.disabled {
-            pointer-events: none;
-            opacity: 0.7;
-        }
-        .option-btn.disabled .opt-speak {
-            opacity: 0.4;
-            pointer-events: none;
-        }
-        .option-btn.reveal-correct {
-            border-color: var(--green);
-            background: rgba(111, 207, 151, 0.15);
-        }
-        .feedback-area {
-            width: 100%;
-            min-height: 36px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 4px 0;
-            border-radius: 16px;
-            transition: all 0.3s;
-            flex-shrink: 0;
-        }
-        .feedback-area .fun-fact {
-            font-size: 0.85rem;
-            opacity: 0.9;
-            font-weight: 400;
-            color: var(--gold);
-            text-align: center;
-        }
-        .feedback-area .mascot-feedback {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-        }
-        .btn-next {
-            background: var(--gold);
-            border: none;
-            border-radius: 60px;
-            padding: 14px 28px;
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #1a2a3a;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            display: none;
-            box-shadow: 0 4px 16px rgba(247, 201, 72, 0.2);
-            margin-top: 6px;
-            width: 100%;
-            max-width: 260px;
+        .editor-row .label {
+            color: #907070;
+            font-size: 11px;
+            text-transform: uppercase;
             letter-spacing: 1px;
-            flex-shrink: 0;
-        }
-        .btn-next:active {
-            transform: scale(0.94);
-        }
-        .btn-next.show {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-        .result-icon {
-            font-size: 3.6rem;
-        }
-        .result-title {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--gold);
-        }
-        .result-stats {
-            font-size: 1rem;
-            opacity: 0.8;
-        }
-        .btn-home {
-            background: rgba(255,255,255,0.08);
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 60px;
-            padding: 12px 32px;
-            font-size: 1.1rem;
             font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
+            margin-right: 4px;
         }
-        .btn-home:active {
-            background: rgba(255,255,255,0.15);
-            transform: scale(0.95);
-        }
-        .back-to-menu {
-            background: rgba(255,255,255,0.06);
-            border: none;
-            border-radius: 60px;
-            padding: 6px 16px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            transition: background 0.2s;
-            align-self: flex-start;
-            flex-shrink: 0;
-        }
-        .back-to-menu:active {
-            background: rgba(255,255,255,0.12);
-        }
-        .forest-container {
-            width: 100%;
-            flex: 1;
-            min-height: 0;
-            overflow-y: auto;
-            border-radius: 20px;
-            background: radial-gradient(ellipse at 30% 20%, #2d5a3d, #1a2f22);
-            border: 2px solid rgba(255,255,255,0.06);
-            box-shadow: inset 0 0 60px rgba(0,0,0,0.5);
-            scroll-behavior: smooth;
-            touch-action: pan-y;
-            -webkit-overflow-scrolling: touch;
-        }
-        .forest-container::-webkit-scrollbar {
-            width: 4px;
-        }
-        .forest-container::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-            border-radius: 4px;
-        }
-        .forest-container::-webkit-scrollbar-thumb {
-            background: var(--gold);
-            border-radius: 4px;
-        }
-        .forest-svg {
-            width: 100%;
-            height: auto;
-            display: block;
-            touch-action: none;
-        }
-        .forest-spot-group {
-            cursor: pointer;
-            transition: transform 0.15s;
-        }
-        .forest-spot-group:active {
-            transform: none;
-        }
-        .forest-spot-circle {
-            stroke: #fff;
-            stroke-width: 3;
-            filter: drop-shadow(0 0 16px rgba(247, 201, 72, 0.6));
-            transition: r 0.2s;
-        }
-        .forest-spot-group:hover .forest-spot-circle {
-            r: 34;
-        }
-        .forest-spot-text {
-            fill: #1a2a3a;
-            font-size: 22px;
-            font-weight: 800;
-            text-anchor: middle;
-            dominant-baseline: central;
-            font-family: 'Segoe UI', sans-serif;
-            pointer-events: none;
-        }
-        .forest-spot-label {
-            fill: #fff;
-            font-size: 13px;
-            font-weight: 600;
-            text-anchor: middle;
-            dominant-baseline: hanging;
-            font-family: 'Segoe UI', sans-serif;
-            pointer-events: none;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
-        }
-        .forest-tree {
-            font-size: 28px;
-            pointer-events: none;
-        }
-        .forest-path {
-            fill: none;
-            stroke: #8b7a5a;
-            stroke-width: 8;
-            stroke-dasharray: 8 10;
-            opacity: 0.5;
-        }
-        .nut-firework {
-            position: fixed;
-            pointer-events: none;
-            z-index: 1000;
-            font-size: 1.8rem;
-            animation: nutFirework 1.2s ease-out forwards;
-        }
-        @keyframes nutFirework {
-            0% { opacity: 1; transform: translate(0, 0) scale(0.5) rotate(0deg); }
-            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(360deg); }
-        }
-        .perfect-title {
-            background: linear-gradient(135deg, var(--gold), #f5a623);
-            color: #1a2a3a;
-            padding: 4px 14px;
+        .editor-row .tool-btn {
+            background: rgba(20, 10, 12, 0.6);
+            border: 1px solid rgba(60, 40, 40, 0.25);
+            color: #b0a0a0;
+            padding: 6px 14px;
             border-radius: 30px;
-            font-weight: 800;
-            font-size: 1.1rem;
-            box-shadow: 0 0 30px rgba(247, 201, 72, 0.4);
-            animation: pulse-gold 1s ease-in-out infinite alternate;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Cinzel', serif;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+            touch-action: manipulation;
+            white-space: nowrap;
         }
-        @keyframes pulse-gold {
-            0% { transform: scale(1); box-shadow: 0 0 20px rgba(247, 201, 72, 0.3); }
-            100% { transform: scale(1.05); box-shadow: 0 0 40px rgba(247, 201, 72, 0.6); }
+        .editor-row .tool-btn:hover { background: rgba(30, 16, 18, 0.7); border-color: rgba(100, 60, 60, 0.3); }
+        .editor-row .tool-btn.active {
+            background: rgba(60, 20, 24, 0.7);
+            border-color: rgba(160, 80, 80, 0.4);
+            color: #f0d0d0;
+            box-shadow: 0 0 30px rgba(120, 30, 30, 0.1), inset 0 0 20px rgba(20, 0, 0, 0.2);
         }
-        .confetti-container {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .editor-row .tool-btn.danger { border-color: rgba(100, 40, 40, 0.3); color: #d0a0a0; }
+        .editor-row .tool-btn.danger.active { background: rgba(80, 30, 30, 0.6); border-color: rgba(180, 70, 70, 0.4); }
+        .editor-row .tool-btn.success { border-color: rgba(50, 90, 60, 0.3); color: #a0c0a0; }
+        .editor-row .tool-btn.success.active { background: rgba(40, 80, 50, 0.5); border-color: rgba(80, 160, 100, 0.4); }
+        .editor-row .tool-btn.warning { border-color: rgba(180, 160, 60, 0.3); color: #d0c080; }
+        .editor-row .tool-btn.warning.active { background: rgba(80, 70, 30, 0.5); border-color: rgba(200, 180, 80, 0.4); }
+
+        .editor-row .btn {
+            background: rgba(10, 6, 8, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(60, 30, 30, 0.35);
+            color: #c0b0b0;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            box-shadow: inset 0 0 20px rgba(20, 0, 0, 0.2);
+            touch-action: manipulation;
+        }
+        .editor-row .btn:hover { background: rgba(20, 10, 12, 0.8); border-color: rgba(120, 60, 60, 0.5); color: #f0e0e0; box-shadow: 0 0 40px rgba(80, 0, 20, 0.15); transform: translateY(-1px); }
+        .editor-row .btn:active { transform: scale(0.96); }
+        .editor-row .btn-primary { background: rgba(30, 10, 12, 0.8); border-color: rgba(120, 50, 50, 0.4); color: #dcc0c0; }
+        .editor-row .btn-primary:hover { background: rgba(50, 15, 18, 0.9); border-color: rgba(180, 70, 70, 0.5); box-shadow: 0 0 50px rgba(120, 30, 30, 0.15); }
+        .editor-row .btn-danger { background: rgba(40, 10, 10, 0.7); border-color: rgba(120, 50, 50, 0.3); color: #e8b0b0; }
+        .editor-row .btn-danger:hover { background: rgba(60, 14, 14, 0.8); border-color: rgba(180, 70, 70, 0.4); box-shadow: 0 0 40px rgba(160, 40, 40, 0.1); }
+
+        .editor-textarea {
             width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 999;
-            overflow: hidden;
+            background: rgba(8, 4, 8, 0.8);
+            color: #c8b8b8;
+            border: 1px solid rgba(60, 30, 30, 0.2);
+            border-radius: 12px;
+            padding: 6px 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            resize: vertical;
+            margin-top: 6px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            transition: border-color 0.3s;
         }
-        .confetti-piece {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            border-radius: 2px;
-            animation: confettiFall linear forwards;
+        .editor-textarea:focus { outline: none; border-color: rgba(120, 60, 60, 0.4); box-shadow: 0 0 30px rgba(60, 20, 20, 0.05); }
+        .hidden { display: none !important; }
+
+        @media (max-width: 750px) {
+            #app { padding: 6px 8px 10px 8px; border-radius: 22px; margin: 6px; }
+            .header-center { gap: 8px; }
+            .timer-wrapper { width: 64px; height: 64px; }
+            .timer-wrapper svg { width: 64px; height: 64px; }
+            .timer-text { font-size: 22px; }
+            .mode-display { font-size: 20px; padding: 4px 10px; }
+            .mode-display .icon { font-size: 28px; }
+            .mode-display .label { font-size: 11px; }
+            .info-badge { font-size: 14px; padding: 4px 10px 4px 12px; gap: 5px; }
+            .info-badge .value { font-size: 30px; min-width: 24px; }
+            .info-badge .label { font-size: 13px; }
+            .btn-menu { font-size: 12px; padding: 3px 10px; }
+            .level-indicator { font-size: 10px; padding: 2px 8px; }
+            .game-over-overlay .result-text { font-size: 36px; }
+            .game-over-overlay .btn-big { font-size: 18px; padding: 10px 28px; min-width: 140px; }
+            .menu-title { font-size: 20px; }
+            .menu-level-btn { font-size: 12px; padding: 8px 12px; }
+            .menu-overlay { padding: 12px; }
+            .editor-row .tool-btn { font-size: 11px; padding: 5px 12px; }
+            .editor-row .btn { font-size: 11px; padding: 5px 14px; }
+            .intro-overlay h1, .victory-overlay h1 { font-size: 34px; letter-spacing: 4px; }
+            .intro-overlay h2, .victory-overlay h2 { font-size: 15px; }
+            .vamp-text { font-size: 13px; padding: 14px 16px; }
+            .vamp-btn { font-size: 16px; padding: 12px 30px; min-width: 160px; }
         }
-        @keyframes confettiFall {
-            0% { transform: translateY(-20px) rotate(0deg) scale(1); opacity: 1; }
-            100% { transform: translateY(110vh) rotate(720deg) scale(0.3); opacity: 0; }
-        }
-        @media (max-width: 480px) {
-            #app { padding: 8px 12px 10px; max-height: 700px; }
-            .mascot-img { max-height: 130px; }
-            .title { font-size: 1.5rem; }
-            .btn-start { font-size: 1.6rem; padding: 14px 28px; }
-            .btn-next { font-size: 1.2rem; padding: 12px 24px; max-width: 220px; }
-            .question-text { font-size: 1rem; }
-            .option-btn { font-size: 0.95rem; padding: 10px 14px; min-height: 48px; }
-            .option-btn .opt-icon { font-size: 1.5rem; width: 1.6rem; }
-            .dot { width: 12px; height: 12px; }
-            .btn-tts { width: 32px; height: 32px; font-size: 1.1rem; }
-            .feedback-area { min-height: 30px; }
-            .nuts-counter { font-size: 1rem; padding: 4px 14px; }
-            .forest-spot-text { font-size: 18px; }
-            .forest-spot-label { font-size: 11px; }
-            .forest-tree { font-size: 22px; }
-        }
-        @media (max-width: 380px) {
-            .mascot-img { max-height: 110px; }
-            .title { font-size: 1.2rem; }
-            .btn-start { font-size: 1.3rem; padding: 12px 20px; }
-            .btn-next { font-size: 1rem; padding: 10px 18px; max-width: 180px; }
-            .question-text { font-size: 0.9rem; }
-            .option-btn { font-size: 0.85rem; padding: 8px 12px; min-height: 42px; }
-            .option-btn .opt-icon { font-size: 1.2rem; width: 1.4rem; }
-            .dot { width: 10px; height: 10px; }
-            .btn-tts { width: 28px; height: 28px; font-size: 0.9rem; }
-            .forest-spot-text { font-size: 15px; }
-            .forest-spot-label { font-size: 9px; }
-            .forest-tree { font-size: 18px; }
+        @media (max-width: 450px) {
+            #app { padding: 4px 4px 8px 4px; border-radius: 16px; margin: 4px; }
+            .header-center { gap: 6px; }
+            .timer-wrapper { width: 52px; height: 52px; }
+            .timer-wrapper svg { width: 52px; height: 52px; }
+            .timer-wrapper .bg { stroke-width: 3; }
+            .timer-wrapper .progress { stroke-width: 3; }
+            .timer-text { font-size: 18px; }
+            .mode-display { font-size: 16px; padding: 3px 6px; }
+            .mode-display .icon { font-size: 22px; }
+            .mode-display .label { font-size: 9px; }
+            .info-badge { font-size: 11px; padding: 3px 6px 3px 8px; gap: 3px; }
+            .info-badge .value { font-size: 24px; min-width: 18px; }
+            .info-badge .label { font-size: 11px; }
+            .btn-menu { font-size: 10px; padding: 2px 8px; }
+            .level-indicator { font-size: 8px; padding: 2px 5px; }
+            .game-over-overlay .result-text { font-size: 28px; }
+            .game-over-overlay .btn-big { font-size: 16px; padding: 8px 20px; min-width: 110px; }
+            .menu-title { font-size: 16px; }
+            .menu-level-btn { font-size: 10px; padding: 6px 10px; }
+            .menu-level-btn .level-diff { font-size: 8px; padding: 1px 6px; }
+            .menu-sub { font-size: 10px; }
+            .menu-close-btn, .menu-editor-btn { font-size: 10px; padding: 4px 16px; }
+            .editor-row .tool-btn { font-size: 10px; padding: 4px 10px; }
+            .editor-row .btn { font-size: 10px; padding: 4px 12px; }
+            .intro-overlay h1, .victory-overlay h1 { font-size: 28px; letter-spacing: 2px; }
+            .intro-overlay h2, .victory-overlay h2 { font-size: 13px; }
+            .vamp-text { font-size: 12px; padding: 12px 14px; }
+            .vamp-btn { font-size: 14px; padding: 10px 24px; min-width: 130px; }
         }
     </style>
 </head>
 <body>
-<div id="app">
 
-    <!-- MAIN SCREEN -->
-    <div id="mainScreen" class="screen active">
-        <div class="mascot-wrapper idle" id="mainWrapper">
-            <img id="mainMascotImg" class="mascot-img" src="squirrel_idle.png" alt="Mascot">
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- ===== ИНТРО ===== -->
+    <div class="intro-overlay show" id="introOverlay">
+        <div class="content">
+            <h1>VampStep</h1>
+            <h2>ПОДКЛЮЧЕНИЕ К СЕТИ БУНКЕРА... ВХОД ВЫПОЛНЕН</h2>
+            <div class="vamp-text" style="text-align: left; max-width: 650px;">
+                Вы — бесстрастный шпион-вампир. Ваша цель — зачистить 5 автономных секторов комплекса, устранить Предводителя и извлечь зашифрованные данные. Таймер активируется при первом контакте. На каждый сектор у вас ровно 60 секунд.
+                <br><br>
+                АНАТОМИЧЕСКИЙ ПРОТОКОЛ СМЕНЫ ФОРМ:
+                <br>• На БЕЛОЙ плитке вы принимаете форму Монолита (Ладья: движение строго по прямым линиям).
+                <br>• На ЧЕРНОЙ плитке вы трансформируетесь в Зверя (Слон: движение строго по диагоналям).
+                <br>• Прыжок возможен только на клетку с целью. Каждое устранение меняет ваш вектор атаки.
+                <br><br>
+                ВНИМАНИЕ: На техническом Уровне 1 из-за плотности бетона мутация заблокирована — вы можете двигаться ТОЛЬКО в форме Ладьи по прямым линиям, независимо от цвета пола. Начиная со 2-го уровня протокол смены форм включится полностью. Приятной охоты.
+            </div>
+            <button class="vamp-btn" id="startOperationBtn">НАЧАТЬ ЛИКВИДАЦИЮ</button>
         </div>
-        <div class="title">Nutcracker</div>
-        <div class="subtitle">🐚 удивительные открытия</div>
-        <div class="nuts-counter">
-            <span id="nutIcon">🥜</span> <span id="nutsCount">0</span> <span style="font-weight:400;font-size:0.8rem;">орехов</span>
-        </div>
-        <button class="btn-start" id="btnStart">🚀 Старт</button>
-        <div class="btn-secondary-group">
-            <button class="btn-secondary btn-forest" id="btnForest">🌳 Магический лес</button>
-        </div>
-        <div class="today-progress">сегодня уже <span id="todayDone">0</span> из 7</div>
     </div>
 
-    <!-- GAME SCREEN -->
-    <div id="gameScreen" class="screen">
-        <div class="game-header">
-            <div class="progress-dots" id="progressDots"></div>
-            <div style="width:36px;"></div>
+    <!-- ===== ПОБЕДА (финальный экран) ===== -->
+    <div class="victory-overlay" id="victoryOverlay">
+        <div class="content">
+            <h1>МИССИЯ ВЫПОЛНЕНА</h1>
+            <h2>КРАХ СИСТЕМЫ</h2>
+            <p class="vamp-text" style="text-align: center; max-width: 550px;">
+                Предводитель ликвидирован. Данные скопированы на физический носитель. Комплекс погружается в автономный карантин, пока вы бесшумно растворяетесь в ночи. Вы ушли живым. Свидетелей не осталось.
+            </p>
+            <button class="vamp-btn" id="reloadBtn">ПЕРЕИГРАТЬ ОПЕРАЦИЮ</button>
         </div>
-        <div class="question-area" id="questionArea">
-            <button class="btn-tts" id="btnTts" aria-label="Озвучить вопрос">🔊</button>
-            <div class="question-icon" id="qIcon">🧐</div>
-            <div class="question-text" id="qText">Загрузка...</div>
-        </div>
-        <div class="options" id="optionsContainer"></div>
-        <div class="feedback-area" id="feedbackArea">
-            <div class="mascot-feedback">
-                <div class="mascot-wrapper idle" id="gameWrapper">
-                    <img id="gameMascotImg" class="mascot-img" src="squirrel_idle.png" alt="Mascot">
+    </div>
+
+    <!-- ===== ОСНОВНОЕ ПРИЛОЖЕНИЕ ===== -->
+    <div id="app">
+        <div class="canvas-wrap">
+            <div class="flash-overlay" id="flashOverlay"></div>
+            <div class="fog-overlay"></div>
+
+            <canvas id="gameCanvas" width="640" height="640"></canvas>
+
+            <div class="game-over-overlay" id="gameOverOverlay">
+                <div class="result-text" id="resultText">ПОБЕДА</div>
+                <button class="btn-big" id="gameOverActionBtn">Далее →</button>
+            </div>
+
+            <div class="menu-overlay" id="menuOverlay">
+                <div class="menu-content">
+                    <div class="menu-title"><span class="blood">♚</span> ВЫБОР УРОВНЯ <span class="blood">♚</span></div>
+                    <div class="menu-sub">Выбери миссию или открой редактор</div>
+                    <div class="menu-levels" id="levelList"></div>
+                    <div class="menu-actions">
+                        <button class="menu-editor-btn" id="menuEditorBtn">🎨 Редактор</button>
+                        <button class="menu-close-btn" id="menuCloseBtn">✕ Закрыть</button>
+                    </div>
                 </div>
             </div>
-            <div class="fun-fact" id="fbFact"></div>
         </div>
-        <button class="btn-next" id="btnNext">➡️ Далее</button>
-    </div>
 
-    <!-- RESULT SCREEN -->
-    <div id="resultScreen" class="screen" style="justify-content:center; gap:10px;">
-        <div class="result-icon">🎉</div>
-        <div class="result-title">Молодец!</div>
-        <div id="perfectBadge" style="display:none;" class="perfect-title">⭐ Супер-Белка дня! ⭐</div>
-        <div class="result-stats" id="resultStats">Ты ответил на 7 вопросов!</div>
-        <div style="font-size:1.1rem; margin:4px 0;">🥜 +<span id="resultNuts">0</span> за сессию</div>
-        <button class="btn-home" id="btnHome">🏠 На главную</button>
-    </div>
+        <div class="header">
+            <div class="header-left"><button class="btn-menu" id="menuBtn">☰</button></div>
+            <div class="header-center">
+                <div class="mode-display" id="modeDisplay"><span class="icon">♜</span><span class="label">ЛАДЬЯ</span></div>
+                <div class="timer-wrapper">
+                    <svg viewBox="0 0 76 76">
+                        <circle class="bg" cx="38" cy="38" r="30" />
+                        <circle class="progress" id="timerCircle" cx="38" cy="38" r="30" stroke-dasharray="188.5" stroke-dashoffset="0" />
+                    </svg>
+                    <div class="timer-text" id="timerDisplay">60</div>
+                </div>
+                <div class="info-badge">
+                    <span class="value" id="scientistCount">0</span>
+                    <span class="label">учёных</span>
+                </div>
+            </div>
+            <div class="header-right"><div class="level-indicator" id="levelIndicator">УР.1</div></div>
+        </div>
 
-    <!-- FOREST SCREEN -->
-    <div id="forestScreen" class="screen">
-        <button class="back-to-menu" id="backFromForest">← Назад</button>
-        <div style="font-size:1rem; margin:4px 0;">🌳 Магический лес</div>
-        <div style="font-size:0.8rem; opacity:0.7; margin-bottom:6px;">Пролистай и выбери тему</div>
-        <div class="forest-container" id="forestContainer">
-            <svg class="forest-svg" viewBox="0 0 400 850" id="forestSvg">
-                <path class="forest-path" d="M200,50 C180,130 220,180 200,240 C180,300 120,330 160,400 C200,470 280,480 240,560 C200,640 140,650 180,720 C220,790 200,820 200,850" />
-            </svg>
+        <div id="editorPanel" class="editor-panel hidden">
+            <div class="editor-row">
+                <span class="label">Рисование:</span>
+                <button class="tool-btn active" data-tool="wall">🧱 Стена</button>
+                <button class="tool-btn" data-tool="floor">⬜ Пол</button>
+                <button class="tool-btn warning" data-tool="color">🎨 Цвет</button>
+            </div>
+            <div class="editor-row">
+                <span class="label">Объекты:</span>
+                <button class="tool-btn success" data-tool="start">⭐ Старт</button>
+                <button class="tool-btn danger" data-tool="scientist">♟ Учёный</button>
+                <button class="tool-btn" data-tool="boss">♚ Король</button>
+                <button class="tool-btn" data-tool="clear">🗑️ Очистить</button>
+            </div>
+            <div class="editor-row">
+                <span class="label">Действия:</span>
+                <button class="btn btn-primary" id="exportBtn">📤 Экспорт</button>
+                <button class="btn btn-primary" id="importBtn">📥 Импорт</button>
+                <button class="btn" id="loadFromGameBtn">📂 Из игры</button>
+                <button class="btn btn-danger" id="closeEditorBtn">✕ Закрыть</button>
+            </div>
+            <textarea id="levelDataArea" class="editor-textarea hidden" rows="3" placeholder="Вставьте JSON уровня..."></textarea>
         </div>
     </div>
 
-    <div class="confetti-container" id="confettiContainer"></div>
+    <script>
+        (function() {
+            'use strict';
 
-</div>
-
-<script>
-    // ============================================================
-    //  DATA — 39 вопросов (6 тем)
-    // ============================================================
-    const SHAPES = {
-        circle: '●',
-        square: '■',
-        triangle: '▲',
-        rectangle: '▬'
-    };
-
-    const CATEGORY_ICONS = {
-        animals: '🐾',
-        food: '🍎',
-        math: '📏',
-        space: '🌍',
-        travel: '🗺️',
-        art: '🖌️'
-    };
-
-    // Определяем категории (темы)
-    const CATEGORIES = {
-        animals: {
-            id: 'animals',
-            name: 'Животные',
-            icon: '🐾',
-            color: '#6fcf97',
-            ids: [],
-            x: 200,
-            y: 115
-        },
-        travel: {
-            id: 'travel',
-            name: 'Путешествия',
-            icon: '🗺️',
-            color: '#f39c12',
-            ids: [],
-            x: 150,
-            y: 230
-        },
-        food: {
-            id: 'food',
-            name: 'Еда и природа',
-            icon: '🍎',
-            color: '#f7c948',
-            ids: [],
-            x: 220,
-            y: 345
-        },
-        math: {
-            id: 'math',
-            name: 'Математика',
-            icon: '📏',
-            color: '#5d9bff',
-            ids: [],
-            x: 165,
-            y: 470
-        },
-        art: {
-            id: 'art',
-            name: 'Искусство',
-            icon: '🖌️',
-            color: '#ab47bc',
-            ids: [],
-            x: 235,
-            y: 595
-        },
-        space: {
-            id: 'space',
-            name: 'Космос',
-            icon: '🌍',
-            color: '#bb86fc',
-            ids: [],
-            x: 185,
-            y: 730
-        }
-    };
-
-    // Вопросы
-    const QUESTION_BANK = [
-        // ---- ЖИВОТНЫЕ (🐾) ----
-        { id: 'q1', icon: CATEGORY_ICONS.animals, question: 'Какое животное самое высокое на Земле?', options: [{ label: 'Жираф', icon: '🦒' }, { label: 'Слон', icon: '🐘' }, { label: 'Кенгуру', icon: '🦘' }], correctIndex: 0, funFact: 'У жирафа такая длинная шея, что он может достать до самых высоких листьев на деревьях!' },
-        { id: 'q2', icon: CATEGORY_ICONS.animals, question: 'Какая птица не умеет летать, зато отлично плавает?', options: [{ label: 'Пингвин', icon: '🐧' }, { label: 'Страус', icon: '🐦' }, { label: 'Попугай', icon: '🦜' }], correctIndex: 0, funFact: 'Пингвины — потрясающие пловцы! Их крылья работают как ласты, и они ловят рыбу под водой.' },
-        { id: 'q3', icon: CATEGORY_ICONS.animals, question: 'У какого животного самый длинный нос?', options: [{ label: 'Слон', icon: '🐘' }, { label: 'Муравьед', icon: '🐜' }, { label: 'Тюлень', icon: '🦭' }], correctIndex: 0, funFact: 'Хобот слона — это и нос, и рука, и даже душ! Он может им пить воду и срывать листья.' },
-        { id: 'q4', icon: CATEGORY_ICONS.animals, question: 'Какое животное может менять цвет, чтобы спрятаться?', options: [{ label: 'Хамелеон', icon: '🦎' }, { label: 'Зебра', icon: '🦓' }, { label: 'Тигр', icon: '🐯' }], correctIndex: 0, funFact: 'Хамелеоны меняют цвет, как волшебники, чтобы стать невидимыми для врагов!' },
-        { id: 'q5', icon: CATEGORY_ICONS.animals, question: 'Какое морское животное самое большое в мире?', options: [{ label: 'Кит', icon: '🐋' }, { label: 'Акула', icon: '🦈' }, { label: 'Дельфин', icon: '🐬' }], correctIndex: 0, funFact: 'Синий кит — самый большой великан на планете, даже больше динозавров!' },
-        { id: 'q6', icon: CATEGORY_ICONS.animals, question: 'У какого животного есть сумка для детёныша?', options: [{ label: 'Кенгуру', icon: '🦘' }, { label: 'Белка', icon: '🐿️' }, { label: 'Лиса', icon: '🦊' }], correctIndex: 0, funFact: 'Мама-кенгуру носит своего малыша в уютной сумке на животе, как рюкзачок!' },
-        { id: 'q7', icon: CATEGORY_ICONS.animals, question: 'Какое животное спит вниз головой?', options: [{ label: 'Летучая мышь', icon: '🦇' }, { label: 'Сова', icon: '🦉' }, { label: 'Обезьяна', icon: '🐒' }], correctIndex: 0, funFact: 'Летучие мыши спят, повиснув вверх ногами, как гроздья винограда!' },
-        { id: 'q8', icon: CATEGORY_ICONS.animals, question: 'Какая птица умеет разговаривать, как человек?', options: [{ label: 'Попугай', icon: '🦜' }, { label: 'Ворона', icon: '🐦‍⬛' }, { label: 'Сова', icon: '🦉' }], correctIndex: 0, funFact: 'Попугаи — настоящие говоруны! Они могут выучить сотни слов и даже петь песенки.' },
-        { id: 'q9', icon: CATEGORY_ICONS.animals, question: 'У какого животного целых три сердца?', options: [{ label: 'Осьминог', icon: '🐙' }, { label: 'Паук', icon: '🕷️' }, { label: 'Лягушка', icon: '🐸' }], correctIndex: 0, funFact: 'У осьминога три сердца, и они перекачивают голубую кровь!' },
-        { id: 'q10', icon: CATEGORY_ICONS.animals, question: 'У какой птицы глаза больше, чем её мозг?', options: [{ label: 'Страус', icon: '🐦' }, { label: 'Орёл', icon: '🦅' }, { label: 'Сова', icon: '🦉' }], correctIndex: 0, funFact: 'У страуса глаза размером с теннисный мяч — они больше, чем его голова!' },
-        // ---- ЕДА И ПРИРОДА (🍎) ----
-        { id: 'q12', icon: CATEGORY_ICONS.food, question: 'Какой овощ почти полностью состоит из воды?', options: [{ label: 'Огурец', icon: '🥒' }, { label: 'Морковь', icon: '🥕' }, { label: 'Картошка', icon: '🥔' }], correctIndex: 0, funFact: 'Огурец на 95% состоит из воды, поэтому он такой хрустящий и освежающий!' },
-        { id: 'q13', icon: CATEGORY_ICONS.food, question: 'Из какого дерева делают сладкий сироп?', options: [{ label: 'Клён', icon: '🍁' }, { label: 'Берёза', icon: '🌳' }, { label: 'Дуб', icon: '🌳' }], correctIndex: 0, funFact: 'Из кленового сока варят ароматный сироп, которым поливают блины!' },
-        { id: 'q14', icon: CATEGORY_ICONS.food, question: 'Какая звезда самая близкая к Земле?', options: [{ label: 'Солнце', icon: '☀️' }, { label: 'Луна', icon: '🌙' }, { label: 'Полярная звезда', icon: '⭐' }], correctIndex: 0, funFact: 'Солнце — это огромная звезда, она даёт нам свет и тепло, без неё ничего бы не росло!' },
-        { id: 'q15', icon: CATEGORY_ICONS.food, question: 'Что появляется на небе после дождя, если светит солнце?', options: [{ label: 'Радуга', icon: '🌈' }, { label: 'Туча', icon: '☁️' }, { label: 'Молния', icon: '⚡' }], correctIndex: 0, funFact: 'Радуга — это волшебный мост из капелек воды и солнечных лучей!' },
-        // ---- МАТЕМАТИКА (📏) ----
-        { id: 'q17', icon: CATEGORY_ICONS.math, question: 'Сколько лап у кошки?', options: [{ label: '2', icon: '2️⃣' }, { label: '4', icon: '4️⃣' }, { label: '6', icon: '6️⃣' }], correctIndex: 1, funFact: 'У кошки четыре мягкие лапки с острыми коготками, она может бесшумно красться!' },
-        { id: 'q18', icon: CATEGORY_ICONS.math, question: 'Сколько колёс у велосипеда?', options: [{ label: '2', icon: '2️⃣' }, { label: '3', icon: '3️⃣' }, { label: '4', icon: '4️⃣' }], correctIndex: 0, funFact: 'У велосипеда два колеса, поэтому он не падает, когда едет!' },
-        { id: 'q19', icon: CATEGORY_ICONS.math, question: 'Сколько ног у паука?', options: [{ label: '6', icon: '6️⃣' }, { label: '8', icon: '8️⃣' }, { label: '10', icon: '🔟' }], correctIndex: 1, funFact: 'Пауки — мастера с восьмью ногами, они плетут самую прочную паутину!' },
-        { id: 'q20', icon: CATEGORY_ICONS.math, question: 'Сколько пальцев на руке?', options: [{ label: '4', icon: '4️⃣' }, { label: '5', icon: '5️⃣' }, { label: '6', icon: '6️⃣' }], correctIndex: 1, funFact: 'На каждой руке пять пальцев, все они разные и помогают нам играть и рисовать.' },
-        { id: 'q21', icon: CATEGORY_ICONS.math, question: 'Какая фигура похожа на мяч?', options: [{ label: 'Круг', icon: SHAPES.circle }, { label: 'Квадрат', icon: SHAPES.square }, { label: 'Треугольник', icon: SHAPES.triangle }], correctIndex: 0, funFact: 'У круга нет углов, поэтому он хорошо катится — как мяч или колесо!' },
-        { id: 'q22', icon: CATEGORY_ICONS.math, question: 'Какая фигура имеет 3 угла?', options: [{ label: 'Треугольник', icon: SHAPES.triangle }, { label: 'Квадрат', icon: SHAPES.square }, { label: 'Круг', icon: SHAPES.circle }], correctIndex: 0, funFact: 'Треугольник — самая прочная фигура, её используют в мостах и крышах домов.' },
-        { id: 'q24', icon: CATEGORY_ICONS.math, question: 'Какая фигура имеет 4 стороны, но они не равны?', options: [{ label: 'Прямоугольник', icon: SHAPES.rectangle }, { label: 'Квадрат', icon: SHAPES.square }, { label: 'Треугольник', icon: SHAPES.triangle }], correctIndex: 0, funFact: 'У прямоугольника две стороны длинные, а две короткие — как у двери или книги.' },
-        { id: 'q25', icon: CATEGORY_ICONS.math, question: 'Какая фигура у пиццы?', options: [{ label: 'Круг', icon: SHAPES.circle }, { label: 'Квадрат', icon: SHAPES.square }, { label: 'Треугольник', icon: SHAPES.triangle }], correctIndex: 0, funFact: 'Пицца обычно круглая, как солнце, чтобы её удобно было резать на кусочки!' },
-        // ---- КОСМОС (🌍) ----
-        { id: 'q26', icon: CATEGORY_ICONS.space, question: 'Как называется наша планета?', options: [{ label: 'Земля', icon: '🌍' }, { label: 'Марс', icon: '🔴' }, { label: 'Венера', icon: '🟡' }], correctIndex: 0, funFact: 'Земля — наш дом, она вращается вокруг Солнца и похожа на большой голубой шар.' },
-        { id: 'q27', icon: CATEGORY_ICONS.space, question: 'Как называется спутник Земли?', options: [{ label: 'Луна', icon: '🌙' }, { label: 'Солнце', icon: '☀️' }, { label: 'Звезда', icon: '⭐' }], correctIndex: 0, funFact: 'Луна — наш ночной сосед, она светит нам ночью, хотя сама не излучает свет, а отражает солнечный.' },
-        // ---- ПУТЕШЕСТВИЯ (🗺️) ----
-        { id: 'q46', icon: CATEGORY_ICONS.travel, question: 'В какой стране находится Эйфелева башня?', options: [{ label: 'Франция', icon: '🇫🇷' }, { label: 'Италия', icon: '🇮🇹' }, { label: 'Англия', icon: '🇬🇧' }], correctIndex: 0, funFact: 'Эйфелева башня — самый узнаваемый символ Франции, её построили в 1889 году!' },
-        { id: 'q47', icon: CATEGORY_ICONS.travel, question: 'Где находится Великая пирамида Хеопса?', options: [{ label: 'Египет', icon: '🇪🇬' }, { label: 'Греция', icon: '🇬🇷' }, { label: 'Турция', icon: '🇹🇷' }], correctIndex: 0, funFact: 'Пирамида Хеопса — единственное из семи чудес света, которое сохранилось до наших дней!' },
-        { id: 'q48', icon: CATEGORY_ICONS.travel, question: 'Какая страна похожа на сапог?', options: [{ label: 'Италия', icon: '🇮🇹' }, { label: 'Испания', icon: '🇪🇸' }, { label: 'Франция', icon: '🇫🇷' }], correctIndex: 0, funFact: 'Италия действительно похожа на сапог, который «пинает» остров Сицилия!' },
-        { id: 'q49', icon: CATEGORY_ICONS.travel, question: 'На каком континенте живут пингвины?', options: [{ label: 'Антарктида', icon: '🧊' }, { label: 'Африка', icon: '🌍' }, { label: 'Австралия', icon: '🦘' }], correctIndex: 0, funFact: 'Пингвины живут в Антарктиде, самом холодном месте на Земле!' },
-        { id: 'q50', icon: CATEGORY_ICONS.travel, question: 'Какой город знаменит своими каналами вместо улиц?', options: [{ label: 'Венеция', icon: '🛶' }, { label: 'Париж', icon: '🗼' }, { label: 'Лондон', icon: '🇬🇧' }], correctIndex: 0, funFact: 'Венеция построена на 118 островах, и вместо машин там лодки — гондолы!' },
-        { id: 'q51', icon: CATEGORY_ICONS.travel, question: 'Где находится Великая Китайская стена?', options: [{ label: 'Китай', icon: '🇨🇳' }, { label: 'Япония', icon: '🇯🇵' }, { label: 'Индия', icon: '🇮🇳' }], correctIndex: 0, funFact: 'Великая Китайская стена тянется на 21 тысячу километров — это как полпути вокруг Земли!' },
-        { id: 'q52', icon: CATEGORY_ICONS.travel, question: 'Какая страна самая большая по территории в мире?', options: [{ label: 'Россия', icon: '🇷🇺' }, { label: 'Китай', icon: '🇨🇳' }, { label: 'США', icon: '🇺🇸' }], correctIndex: 0, funFact: 'Россия — самая большая страна, она занимает 1/8 часть всей суши на планете!' },
-        // ---- ИСКУССТВО (🖌️) ----
-        { id: 'q53', icon: CATEGORY_ICONS.art, question: 'Кто нарисовал картину «Мона Лиза»?', options: [{ label: 'Леонардо да Винчи', icon: '🖌️' }, { label: 'Микеланджело', icon: '🗿' }, { label: 'Рафаэль', icon: '🎨' }], correctIndex: 0, funFact: 'Мона Лиза — самая знаменитая картина в мире, она хранится в Лувре в Париже!' },
-        { id: 'q54', icon: CATEGORY_ICONS.art, question: 'Какой цвет получится, если смешать синий и жёлтый?', options: [{ label: 'Зелёный', icon: '🟢' }, { label: 'Оранжевый', icon: '🟠' }, { label: 'Фиолетовый', icon: '🟣' }], correctIndex: 0, funFact: 'Синий и жёлтый — основные цвета, а их смесь даёт зелёный, как у травы!' },
-        { id: 'q55', icon: CATEGORY_ICONS.art, question: 'Какие краски художники разводят водой?', options: [{ label: 'Акварель', icon: '💧' }, { label: 'Масляные', icon: '🛢️' }, { label: 'Пастель', icon: '🧵' }], correctIndex: 0, funFact: 'Акварельные краски прозрачные, они позволяют создавать лёгкие и воздушные рисунки!' },
-        { id: 'q56', icon: CATEGORY_ICONS.art, question: 'Кто создал скульптуру Давида?', options: [{ label: 'Микеланджело', icon: '🗿' }, { label: 'Леонардо да Винчи', icon: '🖌️' }, { label: 'Рафаэль', icon: '🎨' }], correctIndex: 0, funFact: 'Микеланджело вырезал Давида из цельного куска мрамора, и это одна из величайших скульптур!' },
-        { id: 'q57', icon: CATEGORY_ICONS.art, question: 'Как называют художника, который рисует на стенах?', options: [{ label: 'Граффити-художник', icon: '🧱' }, { label: 'Портретист', icon: '🖼️' }, { label: 'Пейзажист', icon: '🏞️' }], correctIndex: 0, funFact: 'Граффити — это современное искусство, яркие рисунки на стенах домов!' },
-        { id: 'q58', icon: CATEGORY_ICONS.art, question: 'Сколько струн у скрипки?', options: [{ label: '4', icon: '4️⃣' }, { label: '5', icon: '5️⃣' }, { label: '6', icon: '6️⃣' }], correctIndex: 0, funFact: 'У скрипки 4 струны, и на ней можно сыграть самые разные мелодии — от весёлых до грустных!' },
-    ];
-
-    // Заполняем CATEGORIES.ids
-    QUESTION_BANK.forEach(q => {
-        const catId = q.icon;
-        for (const key in CATEGORIES) {
-            if (CATEGORIES[key].icon === catId) {
-                CATEGORIES[key].ids.push(q.id);
-                break;
+            // ===== ФОНОВЫЕ ЧАСТИЦЫ =====
+            const bgCanvas = document.getElementById('bgCanvas');
+            const bgCtx = bgCanvas.getContext('2d');
+            let particles = [];
+            const PARTICLE_COUNT = 20;
+            function resizeBg() {
+                bgCanvas.width = window.innerWidth;
+                bgCanvas.height = window.innerHeight;
             }
-        }
-    });
+            window.addEventListener('resize', resizeBg);
+            resizeBg();
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * bgCanvas.width;
+                    this.y = Math.random() * bgCanvas.height;
+                    this.size = 0.5 + Math.random() * 1.2;
+                    this.speedX = (Math.random() - 0.5) * 0.08;
+                    this.speedY = -0.06 - Math.random() * 0.15;
+                    this.opacity = 0.1 + Math.random() * 0.2;
+                    this.life = 0.3 + Math.random() * 0.7;
+                    this.maxLife = this.life;
+                    this.type = Math.random() > 0.6 ? 'blood' : 'dust';
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.life -= 0.002;
+                    if (this.life <= 0 || this.y < -20) {
+                        this.reset();
+                        this.y = bgCanvas.height + 10;
+                        this.life = this.maxLife;
+                    }
+                }
+                draw(ctx) {
+                    const alpha = this.opacity * (this.life / this.maxLife);
+                    if (this.type === 'blood') {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size * 1.4, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(140, 20, 20, ${alpha * 0.35})`;
+                        ctx.fill();
+                    } else {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(180, 140, 140, ${alpha * 0.1})`;
+                        ctx.fill();
+                    }
+                }
+            }
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                const p = new Particle();
+                p.y = Math.random() * bgCanvas.height;
+                particles.push(p);
+            }
+            function animateBg() {
+                bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+                for (const p of particles) { p.update(); p.draw(bgCtx); }
+                requestAnimationFrame(animateBg);
+            }
+            animateBg();
 
-    // ============================================================
-    //  ДЕКОРАТИВНЫЕ ДЕРЕВЬЯ
-    // ============================================================
-    const DECORATIVE_TREES = [
-        { x: 40, y: 30 }, { x: 60, y: 80 }, { x: 30, y: 140 }, { x: 70, y: 190 },
-        { x: 45, y: 250 }, { x: 80, y: 310 }, { x: 35, y: 370 }, { x: 65, y: 430 },
-        { x: 50, y: 490 }, { x: 75, y: 550 }, { x: 40, y: 620 }, { x: 60, y: 680 },
-        { x: 30, y: 740 }, { x: 70, y: 800 },
-        { x: 350, y: 45 }, { x: 320, y: 110 }, { x: 360, y: 170 }, { x: 330, y: 230 },
-        { x: 355, y: 290 }, { x: 325, y: 350 }, { x: 360, y: 410 }, { x: 340, y: 470 },
-        { x: 355, y: 530 }, { x: 330, y: 590 }, { x: 360, y: 650 }, { x: 340, y: 710 },
-        { x: 355, y: 770 }, { x: 325, y: 820 },
-        { x: 130, y: 60 }, { x: 270, y: 90 }, { x: 110, y: 180 }, { x: 290, y: 200 },
-        { x: 120, y: 320 }, { x: 280, y: 300 }, { x: 140, y: 440 }, { x: 260, y: 460 },
-        { x: 130, y: 570 }, { x: 270, y: 550 }, { x: 120, y: 690 }, { x: 280, y: 670 },
-        { x: 140, y: 790 }, { x: 260, y: 810 },
-    ];
+            // ===== ОСНОВНЫЕ КОНСТАНТЫ =====
+            const MAP_COLS = 16, MAP_ROWS = 16;
+            const CANVAS_SIZE = 640;
+            const VIEW_COLS = 11, VIEW_ROWS = 11;
+            const CELL_SIZE_GAME = CANVAS_SIZE / VIEW_COLS;
+            const CELL_SIZE_EDITOR = CANVAS_SIZE / MAP_COLS;
 
-    // ============================================================
-    //  STORAGE
-    // ============================================================
-    const STORAGE_KEY = 'nutcracker_data';
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const timerCircle = document.getElementById('timerCircle');
+            const scientistCount = document.getElementById('scientistCount');
+            const modeDisplay = document.getElementById('modeDisplay');
+            const levelIndicator = document.getElementById('levelIndicator');
+            const flashOverlay = document.getElementById('flashOverlay');
+            const menuOverlay = document.getElementById('menuOverlay');
+            const menuBtn = document.getElementById('menuBtn');
+            const menuCloseBtn = document.getElementById('menuCloseBtn');
+            const menuEditorBtn = document.getElementById('menuEditorBtn');
+            const levelList = document.getElementById('levelList');
+            const gameOverOverlay = document.getElementById('gameOverOverlay');
+            const resultText = document.getElementById('resultText');
+            const gameOverActionBtn = document.getElementById('gameOverActionBtn');
+            const editorPanel = document.getElementById('editorPanel');
+            const levelDataArea = document.getElementById('levelDataArea');
+            const exportBtn = document.getElementById('exportBtn');
+            const importBtn = document.getElementById('importBtn');
+            const loadFromGameBtn = document.getElementById('loadFromGameBtn');
+            const closeEditorBtn = document.getElementById('closeEditorBtn');
 
-    function loadStorage() {
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (raw) return JSON.parse(raw);
-        } catch (_) {}
-        return null;
-    }
+            // ===== ИНТРО / ПОБЕДА =====
+            const introOverlay = document.getElementById('introOverlay');
+            const victoryOverlay = document.getElementById('victoryOverlay');
+            const startOperationBtn = document.getElementById('startOperationBtn');
+            const reloadBtn = document.getElementById('reloadBtn');
 
-    function saveStorage(data) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
+            let currentLevelIndex = 0;
+            let map = [];
+            let playerRow = 0, playerCol = 0;
+            let scientists = [];
+            let boss = null;
+            let bossActive = false;
+            let timer = 60;
+            let timerInterval = null;
+            let gameOver = false, gameWon = false;
+            let hoverRow = -1, hoverCol = -1;
+            let validTargets = [];
+            let customColors = null;
 
-    function initStorage() {
-        let data = loadStorage();
-        if (!data) {
-            const progress = {};
-            QUESTION_BANK.forEach(q => {
-                progress[q.id] = { box: 1, lastSeen: 0, nextReview: 0, successCount: 0 };
-            });
-            data = {
-                progress: progress,
-                nuts: 0,
-                unlockedThemes: [] // массив открытых тем (id)
+            let bloodEffects = [];
+            let shakeIntensity = 0;
+            let slowMo = false;
+            let slowMoTimer = 0;
+            let bloodPuddles = [];
+            let redAlert = false;
+            let dashAnim = null;
+            let lastTime = 0;
+            let menuOpen = false;
+            let gamePaused = true;
+            let editorMode = false;
+            let currentTool = 'wall';
+            let editorMap = [];
+            let editorScientists = [];
+            let editorStart = null;
+            let editorBoss = null;
+            let editorColors = [];
+            let gameStarted = false;
+
+            // ===== АУДИО =====
+            let audioCtx = null;
+            function getAudioContext() {
+                if (!audioCtx) {
+                    audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                    try {
+                        const bufferSize = audioCtx.sampleRate * 2;
+                        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                        const data = buffer.getChannelData(0);
+                        for (let i = 0; i < bufferSize; i++) {
+                            data[i] = (Math.random() * 2 - 1) * 0.015;
+                        }
+                        const noise = audioCtx.createBufferSource();
+                        noise.buffer = buffer;
+                        noise.loop = true;
+                        const gain = audioCtx.createGain();
+                        gain.gain.value = 0.02;
+                        noise.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        noise.start();
+                    } catch (e) {}
+                }
+                return audioCtx;
+            }
+
+            function playHitSound() {
+                try {
+                    const ctx = getAudioContext();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(280, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.1);
+                    const bufferSize = ctx.sampleRate * 0.03;
+                    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize) * 0.6;
+                    }
+                    const noise = ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    const noiseGain = ctx.createGain();
+                    noiseGain.gain.setValueAtTime(0.04, ctx.currentTime);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.04);
+                    noise.connect(noiseGain);
+                    noiseGain.connect(ctx.destination);
+                    noise.start(ctx.currentTime);
+                } catch (e) {}
+            }
+
+            function playVictorySound() {
+                try {
+                    const ctx = getAudioContext();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(280, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.4);
+                    const bufferSize = ctx.sampleRate * 0.2;
+                    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+                    }
+                    const noise = ctx.createBufferSource();
+                    noise.buffer = buffer;
+                    const noiseGain = ctx.createGain();
+                    noiseGain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+                    noise.connect(noiseGain);
+                    noiseGain.connect(ctx.destination);
+                    noise.start(ctx.currentTime);
+                } catch (e) {}
+            }
+
+            function playBossSound() {
+                try {
+                    const ctx = getAudioContext();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(110, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.4);
+                } catch (e) {}
+            }
+
+            // ===== ЭФФЕКТЫ КРОВИ =====
+            class ExplosionLayer {
+                constructor(cx, cy, config) {
+                    this.cx = cx;
+                    this.cy = cy;
+                    this.baseRadius = config.baseRadius;
+                    this.color = config.color;
+                    this.blur = config.blur;
+                    this.speed = config.speed;
+                    this.duration = config.duration;
+                    this.numPoints = config.numPoints || 120;
+                    this.factors = [];
+                    for (let i = 0; i <= this.numPoints; i++) {
+                        this.factors.push(Math.pow(Math.random(), 0.15) * 0.9 + 0.1);
+                    }
+                    this.elapsed = 0;
+                    this.alive = true;
+                }
+                update(dt) {
+                    if (!this.alive) return false;
+                    this.elapsed += dt * 1000;
+                    if (this.elapsed >= this.duration) {
+                        this.alive = false;
+                        return false;
+                    }
+                    return true;
+                }
+                draw(ctx) {
+                    if (!this.alive) return;
+                    const progress = this.elapsed / this.duration;
+                    const alpha = Math.max(0, 1 - progress);
+                    const radius = this.baseRadius + (this.elapsed / 1000) * this.speed;
+                    if (alpha <= 0) return;
+                    ctx.save();
+                    ctx.globalAlpha = alpha * 0.7;
+                    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                    ctx.shadowBlur = this.blur * 0.5;
+                    ctx.beginPath();
+                    for (let i = 0; i <= this.numPoints; i++) {
+                        const angle = (i / this.numPoints) * Math.PI * 2;
+                        const r = radius * this.factors[i];
+                        const x = this.cx + r * Math.cos(angle);
+                        const y = this.cy + r * Math.sin(angle);
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            class Shard {
+                constructor(cx, cy) {
+                    this.cx = cx;
+                    this.cy = cy;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.startRadius = 3 + Math.random() * 20;
+                    this.speed = 120 + Math.random() * 280;
+                    this.maxLife = 0.1 + Math.random() * 0.25;
+                    this.life = this.maxLife;
+                    this.size = 4 + Math.random() * 14;
+                    this.l1 = 0.4 + Math.random() * 1.4;
+                    this.l2 = 0.4 + Math.random() * 1.4;
+                    this.off1 = 0.15 + Math.random() * 0.6;
+                    this.off2 = -0.15 - Math.random() * 0.6;
+                    const r = 80 + Math.random() * 120;
+                    this.color = `rgb(${r}, 0, 0)`;
+                }
+                update(dt) {
+                    this.life -= dt;
+                    this.startRadius += this.speed * dt;
+                    return this.life > 0;
+                }
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    const alpha = this.life / this.maxLife;
+                    const x = this.cx + this.startRadius * Math.cos(this.angle);
+                    const y = this.cy + this.startRadius * Math.sin(this.angle);
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = 'rgba(50,0,0,0.3)';
+                    ctx.beginPath();
+                    const s = this.size;
+                    ctx.moveTo(x + s * 0.1 * Math.cos(this.angle), y + s * 0.1 * Math.sin(this.angle));
+                    ctx.lineTo(x + s * this.l1 * Math.cos(this.angle + this.off1),
+                        y + s * this.l1 * Math.sin(this.angle + this.off1));
+                    ctx.lineTo(x + s * this.l2 * Math.cos(this.angle + this.off2),
+                        y + s * this.l2 * Math.sin(this.angle + this.off2));
+                    ctx.closePath();
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            class BloodEffect {
+                constructor(cx, cy, isVictory = false) {
+                    this.cx = cx;
+                    this.cy = cy;
+                    this.alive = true;
+                    this.layers = [];
+                    const layerConfigs = isVictory ? [
+                        { baseRadius: 16, color: '#3a0000', blur: 20, speed: 300, duration: 600, numPoints: 120 },
+                        { baseRadius: 10, color: '#600000', blur: 14, speed: 200, duration: 500, numPoints: 90 },
+                        { baseRadius: 6, color: '#880000', blur: 10, speed: 130, duration: 400, numPoints: 70 },
+                        { baseRadius: 3, color: '#aa0000', blur: 6, speed: 80, duration: 300, numPoints: 50 },
+                        { baseRadius: 1.5, color: '#cc0000', blur: 4, speed: 50, duration: 200, numPoints: 30 }
+                    ] : [
+                        { baseRadius: 10, color: '#3a0000', blur: 14, speed: 200, duration: 500, numPoints: 90 },
+                        { baseRadius: 6, color: '#600000', blur: 10, speed: 140, duration: 400, numPoints: 70 },
+                        { baseRadius: 4, color: '#880000', blur: 7, speed: 90, duration: 300, numPoints: 50 },
+                        { baseRadius: 2, color: '#aa0000', blur: 4, speed: 60, duration: 200, numPoints: 30 }
+                    ];
+                    for (const cfg of layerConfigs) {
+                        this.layers.push(new ExplosionLayer(cx, cy, cfg));
+                    }
+                    this.shards = [];
+                    const numShards = isVictory ? 25 : 12;
+                    for (let i = 0; i < numShards; i++) {
+                        this.shards.push(new Shard(cx, cy));
+                    }
+                }
+                update(dt) {
+                    let anyAlive = false;
+                    for (const layer of this.layers) {
+                        if (layer.update(dt)) anyAlive = true;
+                    }
+                    for (let i = this.shards.length - 1; i >= 0; i--) {
+                        if (this.shards[i].update(dt)) anyAlive = true;
+                        else this.shards.splice(i, 1);
+                    }
+                    if (!anyAlive) this.alive = false;
+                    return this.alive;
+                }
+                draw(ctx) {
+                    for (const layer of this.layers) {
+                        layer.draw(ctx);
+                    }
+                    for (const shard of this.shards) {
+                        shard.draw(ctx);
+                    }
+                }
+            }
+
+            function createBloodEffect(screenX, screenY, isVictory = false) {
+                while (bloodEffects.length > 6) bloodEffects.shift();
+                const effect = new BloodEffect(screenX, screenY, isVictory);
+                bloodEffects.push(effect);
+                shakeIntensity = isVictory ? 8 : 4;
+                flashRed(isVictory ? 150 : 60);
+                if (isVictory) playVictorySound();
+                else playHitSound();
+                bloodPuddles.push({ x: screenX, y: screenY + 10, life: 1.0, maxLife: 2.5 });
+                while (bloodPuddles.length > 12) bloodPuddles.shift();
+            }
+
+            function flashRed(duration = 80) {
+                flashOverlay.classList.add('active');
+                setTimeout(() => { flashOverlay.classList.remove('active'); }, duration);
+            }
+
+            // ===== ЦВЕТА КЛЕТОК =====
+            function getCellColor(r, c) {
+                if (editorMode && editorColors && editorColors[r] && editorColors[r][c] !== undefined) {
+                    return editorColors[r][c];
+                }
+                if (customColors && customColors[r] && customColors[r][c] !== undefined) {
+                    return customColors[r][c];
+                }
+                return (r + c) % 2 === 0 ? 'white' : 'black';
+            }
+            function isWhite(r, c) { return getCellColor(r, c) === 'white'; }
+
+            // ===== УРОВНИ =====
+
+            // ===== ОБНОВЛЁННЫЙ ПЕРВЫЙ УРОВЕНЬ (из предоставленного JSON) =====
+            const LEVEL_1 = {
+                name: 'Первый уровень',
+                diff: 'easy',
+                time: 30,  // оставляем 30 секунд как в оригинале
+                map: [
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                ],
+                start: [0,7],
+                scientists: [
+                    [4,7],[4,11],[5,11],[5,7],
+                    [8,4],[9,4],[8,5],[9,7],[8,7],
+                    [12,7],[13,9],[13,7],[12,8],[13,8],
+                    [14,7]  // дополнительный учёный из вашего JSON
+                ],
+                boss: null,
+                colors: [
+                    ["white","black","white","black","white","black","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","white","white","white","white","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","white","white","white","white","white","white","white","black","black","white","black","white","black","white","black"],
+                    ["black","white","white","white","white","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","white","white","white","white","white","white","white","white","white","white","white","white","black","white","black"],
+                    ["black","white","white","white","white","white","white","white","white","white","white","white","black","white","black","white"],
+                    ["white","black","white","black","white","white","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","black","white","white","white","white","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","white","white","white","white","black","white","white","white","black","white","black","white"],
+                    ["white","black","white","white","white","white","white","white","white","black","white","white","white","white","white","black"],
+                    ["black","white","black","black","black","black","black","white","white","white","white","white","white","white","black","white"],
+                    ["white","black","white","black","black","black","black","white","white","white","white","white","white","black","white","black"],
+                    ["black","white","black","black","black","black","black","white","white","white","black","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"]
+                ]
             };
-            saveStorage(data);
-        } else {
-            let needUpdate = false;
-            QUESTION_BANK.forEach(q => {
-                if (!data.progress[q.id]) {
-                    data.progress[q.id] = { box: 1, lastSeen: 0, nextReview: 0, successCount: 0 };
-                    needUpdate = true;
+
+            // Остальные уровни без изменений
+            const LEVEL_2 = {
+                name: 'Второй уровень',
+                diff: 'medium',
+                time: 60,
+                map: [
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,1,1,1,0,1,1,1,0,0,0],
+                    [0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0],
+                    [0,0,0,0,0,0,1,1,1,0,1,1,1,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0]
+                ],
+                start: [0,7],
+                scientists: [
+                    [1,7],[1,8],[3,6],[1,6],[3,8],
+                    [5,6],[7,6],[6,7],[7,8],[5,10],
+                    [7,10],[7,11],[9,11],[5,12],[10,12],
+                    [10,10],[15,11],[11,11]
+                ],
+                boss: null,
+                colors: [
+                    ["white","black","white","black","white","black","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","white","white","black","black","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","white","white","black","black","black","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","black","black","white","white","white","white","white","black","white","black","white","black","white","black","white"],
+                    ["white","black","black","white","white","black","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","white","white","white","white","white","black","black","white","black","white"],
+                    ["white","black","white","white","white","black","white","black","white","white","white","black","black","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","white","white","white","white","black","white"],
+                    ["white","black","white","black","white","black","white","black","white","white","white","white","white","black","white","black"],
+                    ["black","white","black","white","white","white","black","white","black","black","black","black","black","white","black","white"],
+                    ["white","white","white","black","white","black","white","black","black","white","white","black","black","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","black","black","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","black","white","black","white","white","white","black","white","black"],
+                    ["black","white","black","white","black","black","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","black","white","black","white","white","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"]
+                ]
+            };
+
+            const LEVEL_3 = {
+                name: 'Третий уровень',
+                diff: 'hard',
+                time: 60,
+                map: [
+                    [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0],
+                    [0,0,1,1,1,0,0,1,1,1,1,1,1,0,0,0],
+                    [0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                    [0,0,1,1,1,0,0,1,1,1,1,1,1,0,0,0],
+                    [0,0,1,0,0,0,0,1,1,1,1,1,1,0,0,0],
+                    [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,1,1,1,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                    [0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0]
+                ],
+                start: [0,11],
+                scientists: [
+                    [4,7],[1,7],[2,2],[2,3],[2,6],[1,3],[4,2],[6,4],[8,4],[8,2],[9,4],[8,7],[7,7],[10,10],[12,12],[14,10],[15,7],[14,8],[7,3],[7,2],[3,11],[2,8],[3,8],[1,9],[2,10],[2,7]
+                ],
+                boss: null,
+                colors: [
+                    ["white","black","white","black","white","black","white","black","white","black","white","white","white","black","white","black"],
+                    ["black","white","black","black","black","white","white","black","black","black","black","black","black","white","black","white"],
+                    ["white","white","white","white","white","white","white","white","white","white","white","white","white","black","white","black"],
+                    ["black","white","black","black","black","white","white","black","black","black","black","black","black","white","black","white"],
+                    ["white","black","black","black","white","black","white","white","white","white","white","white","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","black","white","black","black","black","white","black","white","black","white","black","white","black","white","black"],
+                    ["black","white","white","black","black","white","white","black","white","white","white","white","white","black","black","white"],
+                    ["white","black","white","white","white","white","white","white","white","black","white","white","white","black","black","black"],
+                    ["black","white","black","black","black","white","white","white","white","black","white","white","white","white","black","white"],
+                    ["white","black","white","black","white","black","white","white","white","black","black","black","white","white","white","black"],
+                    ["black","white","black","white","black","white","white","white","black","black","white","white","black","white","white","white"],
+                    ["white","black","white","black","white","black","white","black","white","black","white","white","black","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","white","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","white","black","white","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"]
+                ]
+            };
+
+            const LEVEL_4 = {
+                name: 'Четвёртый уровень',
+                diff: 'hard',
+                time: 60,
+                map: [
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0],
+                    [0,0,0,1,0,1,1,1,1,1,0,1,0,0,0,0],
+                    [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0],
+                    [0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0],
+                    [0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0],
+                    [0,0,0,1,1,1,0,0,0,1,1,1,0,0,0,0],
+                    [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0],
+                    [0,0,0,1,0,1,1,1,1,1,0,1,0,0,0,0],
+                    [0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0]
+                ],
+                start: [0,7],
+                scientists: [
+                    [15,7],[4,7],[6,7],[6,8],[4,6],[4,9],[7,9],[7,10],[8,9],[8,11],[10,9],[11,7],[10,7],[11,5],[10,6],[12,7],[11,8]
+                ],
+                boss: null,
+                colors: [
+                    ["white","black","white","black","white","black","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","black","white","white","black","white","black","white","black","white","black","white","white","black","white","black"],
+                    ["black","white","black","white","white","white","black","white","black","white","white","white","black","white","black","white"],
+                    ["white","black","white","white","black","white","black","white","black","white","black","white","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","black","white","white","black","white","white","black","white","white","black","white","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","black","white","white","black","white","black","white","black","white","black","white","white","black","white","black"],
+                    ["black","white","black","white","white","white","black","white","black","white","white","white","black","white","black","white"],
+                    ["white","black","white","white","black","white","black","white","black","white","black","white","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"]
+                ]
+            };
+
+            const LEVEL_5 = {
+                name: 'Пятый уровень',
+                diff: 'hard',
+                time: 60,
+                map: [
+                    [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+                    [0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                    [0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0],
+                    [0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0],
+                    [0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0],
+                    [0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0],
+                    [0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],
+                    [0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                ],
+                start: [0,8],
+                scientists: [
+                    [9,10],[8,9],[9,8],[8,8],[8,7],
+                    [9,6],[3,5],[5,7],[2,8],[3,7],
+                    [3,9],[5,9]
+                ],
+                boss: [12,8],
+                colors: [
+                    ["white","black","white","black","white","black","white","black","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","white","white","black","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","black","black","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","white","black","white","black","white","white","white","white","white","white","black","white"],
+                    ["white","black","white","black","white","white","white","white","white","white","white","white","white","black","white","black"],
+                    ["black","white","black","white","white","white","white","white","white","white","white","white","white","white","black","white"],
+                    ["white","black","white","black","white","white","white","white","white","white","white","white","white","black","white","black"],
+                    ["black","white","black","white","black","white","white","white","white","white","white","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","white","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","white","white","white","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","white","white","white","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","white","white","black","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","black","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"],
+                    ["white","black","white","black","white","black","white","black","white","black","white","black","white","black","white","black"],
+                    ["black","white","black","white","black","white","black","white","black","white","black","white","black","white","black","white"]
+                ]
+            };
+
+            const LEVELS = [
+                LEVEL_1,
+                LEVEL_2,
+                LEVEL_3,
+                LEVEL_4,
+                LEVEL_5
+            ];
+
+            // ===== ЛОГИКА ИГРЫ =====
+            function loadLevelData(levelData) {
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                map = levelData.map.map(row => [...row]);
+                const [sr, sc] = levelData.start;
+                playerRow = sr; playerCol = sc;
+                scientists = levelData.scientists.map(([r, c]) => ({ r, c, alive: true }));
+                if (levelData.boss) {
+                    boss = { r: levelData.boss[0], c: levelData.boss[1], alive: false };
+                } else {
+                    boss = null;
                 }
-            });
-            if (data.nuts === undefined || data.nuts === null || isNaN(data.nuts)) {
-                data.nuts = 0;
-                needUpdate = true;
+                bossActive = false;
+                gameOver = false; gameWon = false;
+                timer = levelData.time || 60;
+                hoverRow = -1; hoverCol = -1;
+                validTargets = [];
+                bloodEffects = [];
+                bloodPuddles = [];
+                shakeIntensity = 0;
+                dashAnim = null;
+                redAlert = false;
+                customColors = levelData.colors ? levelData.colors.map(row => [...row]) : null;
+                gameOverOverlay.classList.remove('show');
+                updateUI();
+                updateModeDisplay();
+                const level = LEVELS[currentLevelIndex] || LEVELS[0];
+                levelIndicator.textContent = `УР.${currentLevelIndex+1}`;
+                computeValidTargets();
+                render();
             }
-            if (!data.unlockedThemes) {
-                data.unlockedThemes = [];
-                needUpdate = true;
+
+            function loadLevel(index) {
+                const level = LEVELS[index];
+                if (!level) { currentLevelIndex = 0; loadLevel(0); return; }
+                currentLevelIndex = index;
+                loadLevelData(level);
+                renderLevelMenu();
             }
-            if (needUpdate) {
-                saveStorage(data);
+
+            function startTimer() {
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(() => {
+                    if (gameOver || gamePaused || editorMode) return;
+                    timer -= 1;
+                    timerDisplay.textContent = Math.max(0, timer);
+                    updateTimerCircle();
+                    if (timer <= 10) {
+                        timerDisplay.classList.add('warning');
+                        timerCircle.classList.add('warning');
+                    } else {
+                        timerDisplay.classList.remove('warning');
+                        timerCircle.classList.remove('warning');
+                    }
+                    if (timer <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        loseGame('⏱ Время вышло!');
+                    }
+                    render();
+                }, 1000);
             }
-        }
-        return data;
-    }
 
-    // ============================================================
-    //  SOUND
-    // ============================================================
-    let audioCtx = null;
-
-    function getAudioCtx() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        return audioCtx;
-    }
-
-    function playTone(freq, duration, type = 'sine', volume = 0.3) {
-        try {
-            const ctx = getAudioCtx();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = type;
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(volume, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(ctx.currentTime);
-            osc.stop(ctx.currentTime + duration);
-        } catch (e) {}
-    }
-
-    function playSound(type) {
-        try {
-            const ctx = getAudioCtx();
-            if (ctx.state === 'suspended') {
-                ctx.resume();
+            function updateTimerCircle() {
+                const maxTime = LEVELS[currentLevelIndex].time || 60;
+                const pct = Math.max(0, timer / maxTime);
+                const dash = 188.5 * pct;
+                timerCircle.setAttribute('stroke-dashoffset', 188.5 - dash);
             }
-            switch (type) {
-                case 'click':
-                    playTone(800, 0.08, 'sine', 0.2);
-                    break;
-                case 'correct':
-                    playTone(523, 0.15, 'sine', 0.3);
-                    setTimeout(() => playTone(659, 0.15, 'sine', 0.3), 150);
-                    setTimeout(() => playTone(784, 0.2, 'sine', 0.3), 300);
-                    break;
-                case 'wrong':
-                    playTone(300, 0.4, 'sawtooth', 0.15);
-                    break;
-                case 'complete':
-                    [523, 587, 659, 784, 880, 988, 1047].forEach((f, i) => {
-                        setTimeout(() => playTone(f, 0.15, 'sine', 0.25), i * 120);
+
+            function isWalkable(r, c) {
+                if (r < 0 || r >= MAP_ROWS || c < 0 || c >= MAP_COLS) return false;
+                return map[r][c] === 1;
+            }
+
+            function countAliveScientists() {
+                let cnt = 0;
+                for (const s of scientists) if (s.alive) cnt++;
+                return cnt;
+            }
+
+            function isReachable(row, col) {
+                const dr = row - playerRow;
+                const dc = col - playerCol;
+                if (dr === 0 && dc === 0) return false;
+                const color = isWhite(playerRow, playerCol) ? 'white' : 'black';
+                if (color === 'white') {
+                    if (dr !== 0 && dc !== 0) return false;
+                    if (dr === 0) {
+                        const step = dc > 0 ? 1 : -1;
+                        for (let c = playerCol + step; c !== col; c += step) {
+                            if (!isWalkable(playerRow, c)) return false;
+                        }
+                    } else {
+                        const step = dr > 0 ? 1 : -1;
+                        for (let r = playerRow + step; r !== row; r += step) {
+                            if (!isWalkable(r, playerCol)) return false;
+                        }
+                    }
+                    return isWalkable(row, col);
+                } else {
+                    if (Math.abs(dr) !== Math.abs(dc)) return false;
+                    const stepR = dr > 0 ? 1 : -1;
+                    const stepC = dc > 0 ? 1 : -1;
+                    let r = playerRow + stepR, c = playerCol + stepC;
+                    while (r !== row && c !== col) {
+                        if (!isWalkable(r, c)) return false;
+                        r += stepR; c += stepC;
+                    }
+                    return isWalkable(row, col);
+                }
+            }
+
+            function computeValidTargets() {
+                validTargets = [];
+                if (gameOver || dashAnim || editorMode) return;
+                for (const s of scientists) {
+                    if (!s.alive) continue;
+                    if (s.r === playerRow && s.c === playerCol) continue;
+                    if (isReachable(s.r, s.c)) {
+                        validTargets.push({ r: s.r, c: s.c, type: 'scientist', ref: s });
+                    }
+                }
+                if (bossActive && boss && boss.alive) {
+                    if (boss.r !== playerRow || boss.c !== playerCol) {
+                        if (isReachable(boss.r, boss.c)) {
+                            validTargets.push({ r: boss.r, c: boss.c, type: 'boss' });
+                        }
+                    }
+                }
+                if (!gameOver) {
+                    const alive = countAliveScientists();
+                    if (!bossActive || boss === null) {
+                        if (alive > 0 && validTargets.length === 0) {
+                            loseGame('💀 Тупик! Нет доступных ходов.');
+                        }
+                    } else {
+                        if (alive === 0 && !validTargets.some(t => t.type === 'boss')) {
+                            loseGame('💀 Король недостижим!');
+                        }
+                    }
+                }
+            }
+
+            function moveTo(row, col) {
+                if (gameOver || dashAnim || gamePaused || editorMode) return;
+                const target = validTargets.find(t => t.r === row && t.c === col);
+                if (!target) return;
+                dashAnim = {
+                    fromR: playerRow, fromC: playerCol,
+                    toR: row, toC: col,
+                    progress: 0,
+                    target: target
+                };
+                slowMo = true;
+                slowMoTimer = 0.12;
+                render();
+            }
+
+            function completeDash(target) {
+                if (!target) return;
+                playerRow = target.r;
+                playerCol = target.c;
+
+                const size = CELL_SIZE_GAME;
+                const W = canvas.width, H = canvas.height;
+                let offsetX = playerCol * size - W/2 + size/2;
+                let offsetY = playerRow * size - H/2 + size/2;
+                offsetX = Math.min(offsetX, MAP_COLS * size - W);
+                offsetX = Math.max(offsetX, 0);
+                offsetY = Math.min(offsetY, MAP_ROWS * size - H);
+                offsetY = Math.max(offsetY, 0);
+                const screenX = target.c * size - offsetX + size/2;
+                const screenY = target.r * size - offsetY + size/2;
+
+                if (target.type === 'scientist') {
+                    createBloodEffect(screenX, screenY, false);
+                    target.ref.alive = false;
+                    const alive = countAliveScientists();
+                    if (alive === 0) {
+                        if (boss) {
+                            activateBoss();
+                        } else {
+                            winGame('ПОБЕДА');
+                        }
+                    } else {
+                        computeValidTargets();
+                        updateUI();
+                        render();
+                        if (!gameOver && validTargets.length === 0 && countAliveScientists() > 0) {
+                            loseGame('💀 Тупик! Нет доступных ходов.');
+                        }
+                    }
+                } else if (target.type === 'boss') {
+                    createBloodEffect(screenX, screenY, true);
+                    if (currentLevelIndex === 4) {
+                        showVictoryScreen();
+                    } else {
+                        winGame('ПОБЕДА');
+                    }
+                    render();
+                }
+            }
+
+            function activateBoss() {
+                if (!boss) return;
+                bossActive = true;
+                if (boss) boss.alive = true;
+                computeValidTargets();
+                updateUI();
+                playBossSound();
+                render();
+                if (!gameOver && validTargets.length === 0) {
+                    loseGame('💀 Король недостижим!');
+                }
+            }
+
+            function winGame(msg) {
+                if (gameOver) return;
+                gameOver = true;
+                gameWon = true;
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                updateUI();
+                showGameOver(true);
+                render();
+            }
+
+            function loseGame(msg) {
+                if (gameOver) return;
+                gameOver = true;
+                gameWon = false;
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                updateUI();
+                showGameOver(false);
+                render();
+            }
+
+            function showGameOver(won) {
+                resultText.textContent = won ? 'ПОБЕДА' : 'ПОРАЖЕНИЕ';
+                resultText.className = 'result-text ' + (won ? 'win' : 'lose');
+                gameOverActionBtn.textContent = won ? 'Далее →' : 'Рестарт';
+                gameOverActionBtn.onclick = function() {
+                    if (won) {
+                        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                        bloodEffects = [];
+                        bloodPuddles = [];
+                        dashAnim = null;
+                        shakeIntensity = 0;
+                        gameOverOverlay.classList.remove('show');
+                        currentLevelIndex = (currentLevelIndex + 1) % LEVELS.length;
+                        loadLevel(currentLevelIndex);
+                        if (!gamePaused && !editorMode && !gameOver && gameStarted) startTimer();
+                    } else {
+                        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                        bloodEffects = [];
+                        bloodPuddles = [];
+                        dashAnim = null;
+                        shakeIntensity = 0;
+                        gameOverOverlay.classList.remove('show');
+                        loadLevel(currentLevelIndex);
+                        if (!gamePaused && !editorMode && !gameOver && gameStarted) startTimer();
+                    }
+                };
+                gameOverOverlay.classList.add('show');
+            }
+
+            function showVictoryScreen() {
+                gameOver = true;
+                gameWon = true;
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                victoryOverlay.classList.add('show');
+                gameOverOverlay.classList.remove('show');
+                render();
+                playVictorySound();
+            }
+
+            function updateUI() {
+                const alive = countAliveScientists();
+                scientistCount.textContent = alive;
+                if (alive === 0 && !bossActive && boss !== null) {
+                    scientistCount.classList.add('danger');
+                } else {
+                    scientistCount.classList.remove('danger');
+                }
+                timerDisplay.textContent = Math.max(0, timer);
+                updateTimerCircle();
+                if (timer <= 10) {
+                    timerDisplay.classList.add('warning');
+                    timerCircle.classList.add('warning');
+                } else {
+                    timerDisplay.classList.remove('warning');
+                    timerCircle.classList.remove('warning');
+                }
+                if (timer <= 10) redAlert = true;
+                else redAlert = false;
+            }
+
+            function updateModeDisplay() {
+                if (gameOver) {
+                    modeDisplay.innerHTML = '<span class="icon">⚰️</span><span class="label">КОНЕЦ</span>';
+                    modeDisplay.className = 'mode-display';
+                    return;
+                }
+                const white = isWhite(playerRow, playerCol);
+                if (white) {
+                    modeDisplay.innerHTML = '<span class="icon">♜</span><span class="label">ЛАДЬЯ</span>';
+                    modeDisplay.className = 'mode-display rook';
+                } else {
+                    modeDisplay.innerHTML = '<span class="icon">♝</span><span class="label">СЛОН</span>';
+                    modeDisplay.className = 'mode-display bishop';
+                }
+            }
+
+            // ===== ОТРИСОВКА =====
+            function drawMap(offsetX, offsetY, size, W, H, sourceMap) {
+                const src = sourceMap || map;
+                const startCol = Math.floor(offsetX / size);
+                const endCol = Math.ceil((offsetX + (W || CANVAS_SIZE)) / size);
+                const startRow = Math.floor(offsetY / size);
+                const endRow = Math.ceil((offsetY + (H || CANVAS_SIZE)) / size);
+
+                for (let r = startRow; r < endRow && r < MAP_ROWS; r++) {
+                    for (let c = startCol; c < endCol && c < MAP_COLS; c++) {
+                        const x = c * size - offsetX;
+                        const y = r * size - offsetY;
+                        if (src[r][c] === 0) {
+                            ctx.fillStyle = '#121012';
+                            ctx.fillRect(x, y, size, size);
+                            ctx.strokeStyle = '#0a080a';
+                            ctx.lineWidth = 0.5;
+                            ctx.strokeRect(x, y, size, size);
+                        } else {
+                            const white = isWhite(r, c);
+                            if (white) {
+                                const grd = ctx.createLinearGradient(x, y, x + size, y + size);
+                                grd.addColorStop(0, '#c8b8b0');
+                                grd.addColorStop(0.5, '#d8c8c0');
+                                grd.addColorStop(1, '#b8a8a0');
+                                ctx.fillStyle = grd;
+                                ctx.fillRect(x, y, size, size);
+                                ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                                ctx.fillRect(x + 2, y + 2, size - 4, size - 4);
+                            } else {
+                                const grd = ctx.createLinearGradient(x, y, x + size, y + size);
+                                grd.addColorStop(0, '#3a3030');
+                                grd.addColorStop(0.5, '#4a4040');
+                                grd.addColorStop(1, '#2a2020');
+                                ctx.fillStyle = grd;
+                                ctx.fillRect(x, y, size, size);
+                                ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                                ctx.fillRect(x + 2, y + 2, size - 4, size - 4);
+                            }
+                            ctx.strokeStyle = 'rgba(30,20,20,0.3)';
+                            ctx.lineWidth = 0.5;
+                            ctx.strokeRect(x, y, size, size);
+                            if (size > 16) {
+                                ctx.strokeStyle = 'rgba(20,12,12,0.08)';
+                                ctx.lineWidth = 0.5;
+                                ctx.beginPath();
+                                ctx.moveTo(x + size/2, y);
+                                ctx.lineTo(x + size/2, y + size);
+                                ctx.moveTo(x, y + size/2);
+                                ctx.lineTo(x + size, y + size/2);
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+            }
+
+            function drawEditorObjects(size) {
+                if (editorStart) {
+                    const x = editorStart.c * size + size/2;
+                    const y = editorStart.r * size + size/2;
+                    const grd = ctx.createRadialGradient(x, y, 0, x, y, size*0.5);
+                    grd.addColorStop(0, 'rgba(255,255,0,0.25)');
+                    grd.addColorStop(1, 'rgba(255,255,0,0)');
+                    ctx.fillStyle = grd;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size*0.5, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(x, y, size*0.25, 0, Math.PI*2);
+                    ctx.fillStyle = 'rgba(255,255,0,0.15)';
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(255,255,0,0.6)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size*0.3, 0, Math.PI*2);
+                    ctx.stroke();
+                }
+                for (const s of editorScientists) {
+                    if (!s.alive) continue;
+                    const x = s.c * size + size/2;
+                    const y = s.r * size + size/2 + 2;
+                    ctx.font = `${size * 0.6}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.shadowColor = 'rgba(200,0,0,0.3)';
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = '#cc2222';
+                    ctx.fillText('♟', x, y);
+                    ctx.shadowBlur = 0;
+                }
+                if (editorBoss) {
+                    const x = editorBoss.c * size + size/2;
+                    const y = editorBoss.r * size + size/2 + 2;
+                    ctx.font = `${size * 0.7}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.shadowColor = 'rgba(200,0,0,0.4)';
+                    ctx.shadowBlur = 30;
+                    ctx.fillStyle = '#000000';
+                    ctx.shadowColor = 'rgba(200,0,0,0.5)';
+                    ctx.shadowBlur = 40;
+                    ctx.fillText('♚', x, y + 2);
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            function render() {
+                const W = canvas.width, H = canvas.height;
+                ctx.clearRect(0, 0, W, H);
+
+                let shakeOffX = 0, shakeOffY = 0;
+                if (shakeIntensity > 0.1) {
+                    shakeOffX = (Math.random() - 0.5) * shakeIntensity * 1.8;
+                    shakeOffY = (Math.random() - 0.5) * shakeIntensity * 1.8;
+                    shakeIntensity *= 0.88;
+                    if (shakeIntensity < 0.1) shakeIntensity = 0;
+                }
+                ctx.save();
+                ctx.translate(shakeOffX, shakeOffY);
+
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W*0.8);
+                grad.addColorStop(0, '#160e12');
+                grad.addColorStop(1, '#060206');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                const vignette = ctx.createRadialGradient(W/2, H/2, W*0.2, W/2, H/2, W*0.75);
+                vignette.addColorStop(0, 'rgba(0,0,0,0)');
+                vignette.addColorStop(1, 'rgba(0,0,0,0.5)');
+                ctx.fillStyle = vignette;
+                ctx.fillRect(0, 0, W, H);
+
+                const size = editorMode ? CELL_SIZE_EDITOR : CELL_SIZE_GAME;
+                let offsetX, offsetY;
+                if (editorMode) {
+                    offsetX = 0;
+                    offsetY = 0;
+                    drawMap(0, 0, size, 0, 0, editorMap);
+                    drawEditorObjects(size);
+                    ctx.strokeStyle = 'rgba(100, 70, 70, 0.2)';
+                    ctx.lineWidth = 0.5;
+                    for (let i = 0; i <= MAP_COLS; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(i * size, 0);
+                        ctx.lineTo(i * size, MAP_ROWS * size);
+                        ctx.stroke();
+                    }
+                    for (let i = 0; i <= MAP_ROWS; i++) {
+                        ctx.beginPath();
+                        ctx.moveTo(0, i * size);
+                        ctx.lineTo(MAP_COLS * size, i * size);
+                        ctx.stroke();
+                    }
+                    ctx.fillStyle = 'rgba(10,6,8,0.8)';
+                    ctx.fillRect(6, 6, 200, 26);
+                    ctx.fillStyle = '#d0b0b0';
+                    ctx.font = '12px "Cinzel", serif';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('✏️ РЕДАКТОР · ' + currentTool.toUpperCase(), 14, 10);
+                } else {
+                    offsetX = playerCol * size - W/2 + size/2;
+                    offsetY = playerRow * size - H/2 + size/2;
+                    offsetX = Math.min(offsetX, MAP_COLS * size - W);
+                    offsetX = Math.max(offsetX, 0);
+                    offsetY = Math.min(offsetY, MAP_ROWS * size - H);
+                    offsetY = Math.max(offsetY, 0);
+
+                    drawMap(offsetX, offsetY, size, W, H, map);
+
+                    for (const puddle of bloodPuddles) {
+                        const alpha = puddle.life / puddle.maxLife;
+                        ctx.globalAlpha = alpha * 0.4;
+                        const grd = ctx.createRadialGradient(puddle.x, puddle.y + 8, 0, puddle.x, puddle.y + 8, 20 * (1 + (1 - alpha) * 0.4));
+                        grd.addColorStop(0, 'rgba(60,0,0,0.3)');
+                        grd.addColorStop(1, 'rgba(60,0,0,0)');
+                        ctx.fillStyle = grd;
+                        ctx.beginPath();
+                        ctx.ellipse(puddle.x, puddle.y + 8, 20 * (1 + (1 - alpha) * 0.4), 10 * (1 + (1 - alpha) * 0.4), 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                    }
+
+                    for (const effect of bloodEffects) {
+                        effect.draw(ctx);
+                    }
+
+                    if (!dashAnim) {
+                        for (const t of validTargets) {
+                            const x = t.c * size - offsetX;
+                            const y = t.r * size - offsetY;
+                            if (x + size < 0 || x > W || y + size < 0 || y > H) continue;
+                            const isHover = (t.r === hoverRow && t.c === hoverCol);
+                            const glow = ctx.createRadialGradient(x + size/2, y + size/2, 0, x + size/2, y + size/2, size*0.7);
+                            glow.addColorStop(0, isHover ? 'rgba(220,50,50,0.3)' : 'rgba(160,30,30,0.12)');
+                            glow.addColorStop(1, 'rgba(160,30,30,0)');
+                            ctx.fillStyle = glow;
+                            ctx.fillRect(x - size*0.15, y - size*0.15, size*1.3, size*1.3);
+                            ctx.shadowColor = isHover ? 'rgba(200,0,0,0.4)' : 'rgba(120,0,0,0.15)';
+                            ctx.shadowBlur = isHover ? 30 : 15;
+                            ctx.strokeStyle = isHover ? '#dd5555' : '#992222';
+                            ctx.lineWidth = isHover ? 2 : 1;
+                            ctx.strokeRect(x + 4, y + 4, size - 8, size - 8);
+                            ctx.shadowBlur = 0;
+                            if (isHover) {
+                                ctx.strokeStyle = 'rgba(255,80,80,0.1)';
+                                ctx.lineWidth = 0.5;
+                                ctx.strokeRect(x + 2, y + 2, size - 4, size - 4);
+                            }
+                        }
+                    }
+
+                    for (const s of scientists) {
+                        if (!s.alive) continue;
+                        const x = s.c * size - offsetX + size/2;
+                        const y = s.r * size - offsetY + size/2 + 2;
+                        if (x < -size || x > W + size || y < -size || y > H + size) continue;
+                        ctx.shadowColor = 'rgba(200,0,0,0.5)';
+                        ctx.shadowBlur = 20;
+                        ctx.font = `${size * 0.6}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillStyle = '#dd3333';
+                        ctx.fillText('♟', x, y);
+                        ctx.shadowBlur = 0;
+                    }
+
+                    if (bossActive && boss && boss.alive) {
+                        const x = boss.c * size - offsetX + size/2;
+                        const y = boss.r * size - offsetY + size/2 + 2;
+                        if (x >= 0 && x <= W && y >= 0 && y <= H) {
+                            const pulse = Math.sin(Date.now() / 180) * 0.3 + 0.7;
+                            const glow = ctx.createRadialGradient(x, y, 0, x, y, size * 1.0);
+                            glow.addColorStop(0, `rgba(180,0,0,${0.15 * pulse})`);
+                            glow.addColorStop(1, 'rgba(180,0,0,0)');
+                            ctx.fillStyle = glow;
+                            ctx.beginPath();
+                            ctx.arc(x, y, size * 1.0, 0, Math.PI * 2);
+                            ctx.fill();
+
+                            ctx.shadowColor = `rgba(200,0,0,${0.5 * pulse})`;
+                            ctx.shadowBlur = 50 * pulse;
+                            ctx.font = `${size * 0.75}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillStyle = '#000000';
+                            ctx.shadowColor = `rgba(200,0,0,${0.7 * pulse})`;
+                            ctx.shadowBlur = 60 * pulse;
+                            ctx.fillText('♚', x, y + 2);
+                            ctx.shadowBlur = 0;
+
+                            ctx.strokeStyle = `rgba(180,0,0,${0.08 * pulse})`;
+                            ctx.lineWidth = 1.5;
+                            ctx.beginPath();
+                            ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+                            ctx.stroke();
+
+                            ctx.fillStyle = `rgba(180,0,0,${0.05 * pulse})`;
+                            ctx.font = `${size * 0.25}px "Cinzel", serif`;
+                            ctx.textBaseline = 'bottom';
+                            ctx.fillText('♚', x, y - size * 0.45);
+                        }
+                    }
+
+                    let drawRow = playerRow, drawCol = playerCol;
+                    if (dashAnim) {
+                        const p = dashAnim.progress;
+                        drawRow = dashAnim.fromR + (dashAnim.toR - dashAnim.fromR) * p;
+                        drawCol = dashAnim.fromC + (dashAnim.toC - dashAnim.fromC) * p;
+                        for (let i = 0; i < 6; i++) {
+                            const trailP = Math.max(0, p - i * 0.035);
+                            const tr = dashAnim.fromR + (dashAnim.toR - dashAnim.fromR) * trailP;
+                            const tc = dashAnim.fromC + (dashAnim.toC - dashAnim.fromC) * trailP;
+                            const tx = tc * size - offsetX + size/2;
+                            const ty = tr * size - offsetY + size/2 + 2;
+                            ctx.globalAlpha = 0.3 - i * 0.04;
+                            const tg = ctx.createRadialGradient(tx, ty, 0, tx, ty, size * 0.4);
+                            tg.addColorStop(0, `rgba(180,30,30,${0.4 - i * 0.04})`);
+                            tg.addColorStop(1, 'rgba(180,30,30,0)');
+                            ctx.fillStyle = tg;
+                            ctx.beginPath();
+                            ctx.arc(tx, ty, size * 0.4 * (1 - i * 0.08), 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        ctx.globalAlpha = 1;
+                    }
+                    const px = drawCol * size - offsetX + size/2;
+                    const py = drawRow * size - offsetY + size/2 + 2;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const colColor = isWhite(Math.round(drawRow), Math.round(drawCol)) ? 'white' : 'black';
+                    const playerSymbol = (colColor === 'white') ? '♜' : '♝';
+                    ctx.font = `${size * 0.85}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+
+                    const pGlow = ctx.createRadialGradient(px, py, 0, px, py, size * 0.7);
+                    pGlow.addColorStop(0, 'rgba(200,60,60,0.12)');
+                    pGlow.addColorStop(1, 'rgba(200,60,60,0)');
+                    ctx.fillStyle = pGlow;
+                    ctx.beginPath();
+                    ctx.arc(px, py, size * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    if (gameOver && !gameWon) {
+                        ctx.shadowColor = 'rgba(255,0,0,0.4)';
+                        ctx.shadowBlur = 30;
+                        ctx.fillStyle = '#883333';
+                        ctx.fillText(playerSymbol, px, py);
+                        ctx.shadowBlur = 0;
+                    } else {
+                        ctx.shadowColor = 'rgba(200,50,50,0.6)';
+                        ctx.shadowBlur = 35;
+                        ctx.fillStyle = '#f0d0d0';
+                        ctx.fillText(playerSymbol, px, py);
+                        ctx.shadowBlur = 0;
+                    }
+
+                    ctx.fillStyle = 'rgba(10,6,8,0.6)';
+                    ctx.fillRect(6, 6, 170, 24);
+                    ctx.fillStyle = '#b0a0a0';
+                    ctx.font = '11px "Cinzel", serif';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    const bossLabel = bossActive && boss ? ' ♚ БОСС' : '';
+                    ctx.fillText(`[${Math.round(drawRow)},${Math.round(drawCol)}]${bossLabel}`, 14, 9);
+                }
+
+                ctx.restore();
+            }
+
+            // ==== РЕДАКТОР ====
+            function toggleEditor() {
+                if (editorMode) {
+                    editorMode = false;
+                    editorPanel.classList.add('hidden');
+                    levelDataArea.classList.add('hidden');
+                    applyEditorData();
+                    if (!gameOver && !timerInterval && !gamePaused && gameStarted) startTimer();
+                    render();
+                    if (menuOpen) closeMenu();
+                } else {
+                    editorMode = true;
+                    editorPanel.classList.remove('hidden');
+                    levelDataArea.classList.remove('hidden');
+                    editorMap = map.map(row => [...row]);
+                    editorScientists = scientists.map(s => ({ ...s }));
+                    editorStart = { r: playerRow, c: playerCol };
+                    editorBoss = boss ? { r: boss.r, c: boss.c } : null;
+                    if (customColors) {
+                        editorColors = customColors.map(row => [...row]);
+                    } else {
+                        editorColors = [];
+                        for (let r = 0; r < MAP_ROWS; r++) {
+                            editorColors[r] = [];
+                            for (let c = 0; c < MAP_COLS; c++) {
+                                editorColors[r][c] = (r + c) % 2 === 0 ? 'white' : 'black';
+                            }
+                        }
+                    }
+                    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                    if (menuOpen) closeMenu();
+                    render();
+                }
+            }
+
+            function applyEditorData() {
+                map = editorMap.map(row => [...row]);
+                const start = editorStart;
+                if (start) {
+                    playerRow = start.r;
+                    playerCol = start.c;
+                }
+                scientists = editorScientists.filter(s => s.alive).map(s => ({ ...s }));
+                if (editorBoss) {
+                    boss = { r: editorBoss.r, c: editorBoss.c, alive: false };
+                } else {
+                    boss = null;
+                }
+                bossActive = false;
+                gameOver = false; gameWon = false;
+                timer = LEVELS[currentLevelIndex].time || 60;
+                hoverRow = -1; hoverCol = -1;
+                validTargets = [];
+                bloodEffects = [];
+                bloodPuddles = [];
+                dashAnim = null;
+                shakeIntensity = 0;
+                customColors = editorColors.map(row => [...row]);
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                gameOverOverlay.classList.remove('show');
+                updateUI();
+                updateModeDisplay();
+                computeValidTargets();
+                render();
+                if (!gameOver && !gamePaused && !editorMode && gameStarted) startTimer();
+            }
+
+            function handleEditorClick(e) {
+                if (!editorMode) return;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mx = (e.clientX - rect.left) * scaleX;
+                const my = (e.clientY - rect.top) * scaleY;
+                const size = CELL_SIZE_EDITOR;
+                const col = Math.floor(mx / size);
+                const row = Math.floor(my / size);
+                if (row < 0 || row >= MAP_ROWS || col < 0 || col >= MAP_COLS) return;
+
+                switch (currentTool) {
+                    case 'wall':
+                        editorMap[row][col] = 0;
+                        if (editorStart && editorStart.r === row && editorStart.c === col) editorStart = null;
+                        editorScientists = editorScientists.filter(s => !(s.r === row && s.c === col));
+                        if (editorBoss && editorBoss.r === row && editorBoss.c === col) editorBoss = null;
+                        break;
+                    case 'floor':
+                        editorMap[row][col] = 1;
+                        break;
+                    case 'color':
+                        const current = editorColors[row][col];
+                        editorColors[row][col] = (current === 'white') ? 'black' : 'white';
+                        break;
+                    case 'start':
+                        if (editorStart && editorStart.r === row && editorStart.c === col) {
+                            editorStart = null;
+                        } else {
+                            if (editorMap[row][col] === 1) {
+                                if (editorScientists.some(s => s.r === row && s.c === col)) return;
+                                if (editorBoss && editorBoss.r === row && editorBoss.c === col) return;
+                                editorStart = { r: row, c: col };
+                            }
+                        }
+                        break;
+                    case 'scientist':
+                        const idx = editorScientists.findIndex(s => s.r === row && s.c === col);
+                        if (idx !== -1) {
+                            editorScientists.splice(idx, 1);
+                        } else {
+                            if (editorMap[row][col] === 1) {
+                                if (editorStart && editorStart.r === row && editorStart.c === col) return;
+                                if (editorBoss && editorBoss.r === row && editorBoss.c === col) return;
+                                editorScientists.push({ r: row, c: col, alive: true });
+                            }
+                        }
+                        break;
+                    case 'boss':
+                        if (editorBoss && editorBoss.r === row && editorBoss.c === col) {
+                            editorBoss = null;
+                        } else {
+                            if (editorMap[row][col] === 1) {
+                                if (editorStart && editorStart.r === row && editorStart.c === col) return;
+                                if (editorScientists.some(s => s.r === row && s.c === col)) return;
+                                editorBoss = { r: row, c: col };
+                            }
+                        }
+                        break;
+                    case 'clear':
+                        editorMap = Array.from({ length: MAP_ROWS }, () => Array(MAP_COLS).fill(0));
+                        editorScientists = [];
+                        editorStart = null;
+                        editorBoss = null;
+                        for (let r = 0; r < MAP_ROWS; r++) {
+                            for (let c = 0; c < MAP_COLS; c++) {
+                                editorColors[r][c] = (r + c) % 2 === 0 ? 'white' : 'black';
+                            }
+                        }
+                        break;
+                    default: return;
+                }
+                render();
+            }
+
+            // ===== ЭКСПОРТ / ИМПОРТ =====
+            function exportLevel() {
+                const levelData = {
+                    map: editorMap,
+                    start: editorStart ? [editorStart.r, editorStart.c] : null,
+                    scientists: editorScientists.filter(s => s.alive).map(s => [s.r, s.c]),
+                    boss: editorBoss ? [editorBoss.r, editorBoss.c] : null,
+                    colors: editorColors
+                };
+                const json = JSON.stringify(levelData);
+                levelDataArea.value = json;
+                levelDataArea.select();
+                document.execCommand('copy');
+                const oldText = levelDataArea.style.borderColor;
+                levelDataArea.style.borderColor = '#60a060';
+                setTimeout(() => { levelDataArea.style.borderColor = oldText; }, 500);
+            }
+
+            function importLevel() {
+                try {
+                    const data = JSON.parse(levelDataArea.value);
+                    if (!data.map || !data.start || !data.scientists) throw new Error('Неверный формат');
+                    editorMap = data.map;
+                    editorStart = { r: data.start[0], c: data.start[1] };
+                    editorScientists = data.scientists.map(([r, c]) => ({ r, c, alive: true }));
+                    editorBoss = data.boss ? { r: data.boss[0], c: data.boss[1] } : null;
+                    if (data.colors) {
+                        editorColors = data.colors;
+                    } else {
+                        editorColors = [];
+                        for (let r = 0; r < MAP_ROWS; r++) {
+                            editorColors[r] = [];
+                            for (let c = 0; c < MAP_COLS; c++) {
+                                editorColors[r][c] = (r + c) % 2 === 0 ? 'white' : 'black';
+                            }
+                        }
+                    }
+                    render();
+                    const oldText = levelDataArea.style.borderColor;
+                    levelDataArea.style.borderColor = '#60a060';
+                    setTimeout(() => { levelDataArea.style.borderColor = oldText; }, 500);
+                } catch (e) {
+                    const oldText = levelDataArea.style.borderColor;
+                    levelDataArea.style.borderColor = '#a06060';
+                    setTimeout(() => { levelDataArea.style.borderColor = oldText; }, 500);
+                }
+            }
+
+            function loadFromGame() {
+                editorMap = map.map(row => [...row]);
+                editorScientists = scientists.map(s => ({ ...s }));
+                editorStart = { r: playerRow, c: playerCol };
+                editorBoss = boss ? { r: boss.r, c: boss.c } : null;
+                if (customColors) {
+                    editorColors = customColors.map(row => [...row]);
+                } else {
+                    editorColors = [];
+                    for (let r = 0; r < MAP_ROWS; r++) {
+                        editorColors[r] = [];
+                        for (let c = 0; c < MAP_COLS; c++) {
+                            editorColors[r][c] = (r + c) % 2 === 0 ? 'white' : 'black';
+                        }
+                    }
+                }
+                render();
+            }
+
+            // ===== МЕНЮ =====
+            function renderLevelMenu() {
+                levelList.innerHTML = '';
+                LEVELS.forEach((level, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'menu-level-btn' + (idx === currentLevelIndex ? ' active' : '');
+                    const diffClass = level.diff === 'easy' ? 'easy' : level.diff === 'medium' ? 'medium' : 'hard';
+                    const diffLabel = level.diff === 'easy' ? '★' : level.diff === 'medium' ? '★★' : '★★★';
+                    btn.innerHTML = `
+                        <span class="level-num">#${idx+1}</span>
+                        <span class="level-name">${level.name}</span>
+                        <span class="level-diff ${diffClass}">${diffLabel}</span>
+                    `;
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selectLevel(idx);
                     });
-                    break;
-                default:
-                    break;
-            }
-        } catch (e) {}
-    }
-
-    // ============================================================
-    //  CONFETTI
-    // ============================================================
-    function fireConfetti(count = 60) {
-        const container = document.getElementById('confettiContainer');
-        const colors = ['#f7c948', '#6fcf97', '#5d9bff', '#eb5757', '#bb86fc', '#ff6b6b', '#f5a623', '#4ecdc4'];
-        for (let i = 0; i < count; i++) {
-            const piece = document.createElement('div');
-            piece.className = 'confetti-piece';
-            const size = 6 + Math.random() * 10;
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            const left = Math.random() * 100;
-            const duration = 2 + Math.random() * 2.5;
-            const delay = Math.random() * 1.5;
-            const rotate = Math.random() * 360;
-            piece.style.cssText = `left:${left}%;width:${size}px;height:${size}px;background:${color};border-radius:${Math.random()>0.5?'50%':'2px'};animation-duration:${duration}s;animation-delay:${delay}s;transform:rotate(${rotate}deg);`;
-            container.appendChild(piece);
-            setTimeout(() => piece.remove(), (duration + delay) * 1000 + 200);
-        }
-        setTimeout(() => container.innerHTML = '', 6000);
-    }
-
-    // ============================================================
-    //  TTS
-    // ============================================================
-    let preferredVoice = null;
-
-    function loadVoices() {
-        const voices = window.speechSynthesis.getVoices();
-        if (!voices || voices.length === 0) return;
-        const priority = ['Google русский', 'Microsoft Irina', 'Microsoft Pavel'];
-        let selected = null;
-        for (const name of priority) {
-            const found = voices.find(v => v.name === name && v.lang.startsWith('ru'));
-            if (found) {
-                selected = found;
-                break;
-            }
-        }
-        if (!selected) {
-            selected = voices.find(v => v.lang.startsWith('ru'));
-        }
-        if (!selected && voices.length > 0) {
-            selected = voices[0];
-        }
-        preferredVoice = selected;
-        console.log('Выбран голос:', selected ? selected.name : 'не найден');
-    }
-
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = loadVoices;
-        if (window.speechSynthesis.getVoices().length > 0) {
-            loadVoices();
-        } else {
-            window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
-        }
-    }
-
-    function speakText(text, callback) {
-        if (!('speechSynthesis' in window)) {
-            if (callback) setTimeout(callback, 0);
-            return;
-        }
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'ru-RU';
-        utterance.rate = 0.8;
-        utterance.pitch = 1.15;
-        utterance.volume = 1;
-        if (preferredVoice) {
-            utterance.voice = preferredVoice;
-        }
-        if (callback) {
-            utterance.onend = callback;
-        }
-        window.speechSynthesis.speak(utterance);
-    }
-
-    function speakSequence(texts) {
-        if (!texts || texts.length === 0) return;
-        let index = 0;
-        function speakNext() {
-            if (index >= texts.length) return;
-            const text = texts[index];
-            index++;
-            speakText(text, speakNext);
-        }
-        speakNext();
-    }
-
-    // ============================================================
-    //  APP STATE
-    // ============================================================
-    let appData = initStorage();
-    let sessionQueue = [];
-    let currentQuestionId = null;
-    let isAnswering = false;
-    let correctCountInSession = 0;
-    let sessionNutsEarned = 0;
-    let isForestMode = false;
-    let forestCategoryId = null;
-    let animating = false;
-
-    // DOM refs
-    const mainScreen = document.getElementById('mainScreen');
-    const gameScreen = document.getElementById('gameScreen');
-    const resultScreen = document.getElementById('resultScreen');
-    const forestScreen = document.getElementById('forestScreen');
-    const mainWrapper = document.getElementById('mainWrapper');
-    const gameWrapper = document.getElementById('gameWrapper');
-    const btnStart = document.getElementById('btnStart');
-    const btnForest = document.getElementById('btnForest');
-    const btnHome = document.getElementById('btnHome');
-    const btnNext = document.getElementById('btnNext');
-    const btnTts = document.getElementById('btnTts');
-    const backFromForest = document.getElementById('backFromForest');
-    const progressDots = document.getElementById('progressDots');
-    const qIcon = document.getElementById('qIcon');
-    const qText = document.getElementById('qText');
-    const optionsContainer = document.getElementById('optionsContainer');
-    const feedbackArea = document.getElementById('feedbackArea');
-    const fbFact = document.getElementById('fbFact');
-    const nutsCount = document.getElementById('nutsCount');
-    const todayDone = document.getElementById('todayDone');
-    const resultNuts = document.getElementById('resultNuts');
-    const resultStats = document.getElementById('resultStats');
-    const perfectBadge = document.getElementById('perfectBadge');
-    const forestSvg = document.getElementById('forestSvg');
-    const questionArea = document.getElementById('questionArea');
-    const nutIcon = document.getElementById('nutIcon');
-
-    // ============================================================
-    //  СОСТОЯНИЯ МАСКОТА
-    // ============================================================
-    let currentMascotState = 'idle';
-
-    function updateMascot(state) {
-        currentMascotState = state;
-        const srcMap = {
-            idle: 'squirrel_idle.png',
-            win: 'squirrel_win.png',
-            think: 'squirrel_think.png'
-        };
-        const classMap = {
-            idle: 'idle',
-            win: 'happy',
-            think: 'sad'
-        };
-        const src = srcMap[state] || 'squirrel_idle.png';
-        const cls = classMap[state] || 'idle';
-
-        document.querySelectorAll('.mascot-img').forEach(img => {
-            img.src = src;
-        });
-
-        const wrappers = [mainWrapper, gameWrapper];
-        wrappers.forEach(w => {
-            if (w) {
-                w.className = 'mascot-wrapper';
-                w.classList.add(cls);
-            }
-        });
-    }
-
-    // ============================================================
-    //  ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕМАМИ
-    // ============================================================
-    function isCategoryUnlocked(categoryId) {
-        return appData.unlockedThemes.includes(categoryId);
-    }
-
-    function getUnlockedCategoryIds() {
-        return appData.unlockedThemes.slice();
-    }
-
-    // Обновить unlockedThemes на основе прогресса (box > 1 хотя бы у одного вопроса)
-    function refreshUnlockedThemes() {
-        const allIds = Object.keys(CATEGORIES);
-        const newUnlocked = [];
-        for (const key of allIds) {
-            const ids = CATEGORIES[key].ids;
-            let hasSolved = false;
-            for (const id of ids) {
-                if (appData.progress[id] && appData.progress[id].box > 1) {
-                    hasSolved = true;
-                    break;
-                }
-            }
-            if (hasSolved) {
-                newUnlocked.push(key);
-            }
-        }
-        // Сохраняем в порядке тем, чтобы они открывались последовательно
-        const order = ['animals', 'travel', 'food', 'math', 'art', 'space'];
-        const sorted = [];
-        for (const key of order) {
-            if (newUnlocked.includes(key)) sorted.push(key);
-        }
-        appData.unlockedThemes = sorted;
-        saveStorage(appData);
-    }
-
-    // ============================================================
-    //  CARD SELECTOR ENGINE
-    // ============================================================
-    function buildSession(allowedCategoryIds, limit) {
-        const today = Date.now();
-        let poolIds = [];
-        if (allowedCategoryIds && allowedCategoryIds.length > 0) {
-            allowedCategoryIds.forEach(catId => {
-                const ids = CATEGORIES[catId].ids;
-                poolIds.push(...ids);
-            });
-        } else {
-            poolIds = QUESTION_BANK.map(q => q.id);
-        }
-        poolIds = [...new Set(poolIds)];
-
-        const progress = appData.progress;
-
-        const box1Due = poolIds.filter(id => progress[id].box === 1 && progress[id].nextReview <= today);
-        const box2_3Due = poolIds.filter(id => (progress[id].box === 2 || progress[id].box === 3) && progress[id].nextReview <= today);
-        const newCards = poolIds.filter(id => progress[id].box === 1 && progress[id].nextReview === 0);
-
-        shuffleArray(box1Due);
-        shuffleArray(box2_3Due);
-        shuffleArray(newCards);
-
-        let selected = [];
-
-        for (const id of box1Due) {
-            if (selected.length >= 2) break;
-            if (!selected.includes(id)) selected.push(id);
-        }
-
-        for (const id of box2_3Due) {
-            if (!selected.includes(id)) {
-                selected.push(id);
-                break;
-            }
-        }
-
-        if (selected.length < 2) {
-            for (const id of box1Due) {
-                if (selected.length >= 2) break;
-                if (!selected.includes(id)) selected.push(id);
-            }
-        }
-
-        for (const id of newCards) {
-            if (selected.length >= (limit || 7)) break;
-            if (!selected.includes(id)) selected.push(id);
-        }
-
-        if (selected.length < (limit || 7)) {
-            const unused = poolIds.filter(id => !selected.includes(id));
-            shuffleArray(unused);
-            const need = (limit || 7) - selected.length;
-            selected.push(...unused.slice(0, need));
-        }
-
-        shuffleArray(selected);
-        return selected;
-    }
-
-    function shuffleArray(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
-
-    // ============================================================
-    //  FOREST — render
-    // ============================================================
-    function renderForest() {
-        const svg = forestSvg;
-        while (svg.children.length > 1) {
-            svg.removeChild(svg.lastChild);
-        }
-
-        DECORATIVE_TREES.forEach(tree => {
-            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            text.setAttribute('x', tree.x);
-            text.setAttribute('y', tree.y);
-            text.setAttribute('class', 'forest-tree');
-            text.textContent = '🌲';
-            svg.appendChild(text);
-        });
-
-        Object.values(CATEGORIES).forEach((cat) => {
-            const unlocked = isCategoryUnlocked(cat.id);
-            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            group.setAttribute('class', 'forest-spot-group');
-            group.setAttribute('data-category', cat.id);
-            group.style.zIndex = 10;
-
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', cat.x);
-            circle.setAttribute('cy', cat.y);
-            circle.setAttribute('r', '30');
-            circle.setAttribute('class', 'forest-spot-circle');
-            circle.setAttribute('fill', unlocked ? cat.color : '#555555');
-            if (!unlocked) {
-                circle.setAttribute('opacity', '0.6');
-                const lock = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                lock.setAttribute('x', cat.x);
-                lock.setAttribute('y', cat.y + 70);
-                lock.setAttribute('class', 'forest-spot-label');
-                lock.setAttribute('fill', '#aaa');
-                lock.textContent = '🔒';
-                group.appendChild(lock);
-            }
-            group.appendChild(circle);
-
-            const iconText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            iconText.setAttribute('x', cat.x);
-            iconText.setAttribute('y', cat.y);
-            iconText.setAttribute('class', 'forest-spot-text');
-            iconText.setAttribute('font-size', '26px');
-            iconText.textContent = cat.icon;
-            group.appendChild(iconText);
-
-            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            label.setAttribute('x', cat.x);
-            label.setAttribute('y', cat.y + 48);
-            label.setAttribute('class', 'forest-spot-label');
-            label.textContent = cat.name;
-            group.appendChild(label);
-
-            if (!unlocked) {
-                group.style.cursor = 'default';
-            } else {
-                group.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    startForestSession(cat.id);
+                    levelList.appendChild(btn);
                 });
             }
 
-            svg.appendChild(group);
-        });
-    }
+            function selectLevel(idx) {
+                if (editorMode) return;
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                bloodEffects = [];
+                bloodPuddles = [];
+                dashAnim = null;
+                shakeIntensity = 0;
+                gameOverOverlay.classList.remove('show');
+                loadLevel(idx);
+                closeMenu();
+            }
 
-    function startForestSession(categoryId) {
-        const cat = CATEGORIES[categoryId];
-        if (!cat || cat.ids.length === 0) {
-            speakText('В этой теме пока нет вопросов');
-            return;
-        }
-        if (!isCategoryUnlocked(categoryId)) {
-            speakText('Эта тема пока закрыта! Решай задачи, чтобы открыть её.');
-            return;
-        }
-        isForestMode = true;
-        forestCategoryId = categoryId;
-        startSession([categoryId], 7);
-    }
+            function openMenu() {
+                menuOpen = true;
+                gamePaused = true;
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+                renderLevelMenu();
+                menuOverlay.classList.add('show');
+                if (editorMode) {
+                    editorMode = false;
+                    editorPanel.classList.add('hidden');
+                    levelDataArea.classList.add('hidden');
+                    render();
+                }
+            }
 
-    // ============================================================
-    //  RENDER GAME
-    // ============================================================
-    function renderQuestion() {
-        if (sessionQueue.length === 0) {
-            finishSession();
-            return;
-        }
+            function closeMenu() {
+                menuOpen = false;
+                gamePaused = false;
+                menuOverlay.classList.remove('show');
+                computeValidTargets();
+                updateUI();
+                render();
+                if (!gameOver && !editorMode && !timerInterval && gameStarted) startTimer();
+            }
 
-        const id = sessionQueue[0];
-        currentQuestionId = id;
-        const q = getQuestion(id);
-        if (!q) {
-            sessionQueue.shift();
-            renderQuestion();
-            return;
-        }
+            function toggleMenu() {
+                if (menuOpen) closeMenu();
+                else openMenu();
+            }
 
-        updateDots();
+            // ===== ЗАПУСК ИГРЫ ИЗ ИНТРО =====
+            function startOperation() {
+                introOverlay.classList.remove('show');
+                gameStarted = true;
+                gamePaused = false;
+                loadLevel(0);
+                if (!gameOver && !editorMode && !timerInterval) startTimer();
+            }
 
-        optionsContainer.classList.remove('disabled');
-        questionArea.classList.remove('slide-up');
-        void questionArea.offsetWidth;
+            // ===== СОБЫТИЯ =====
+            startOperationBtn.addEventListener('click', startOperation);
 
-        qIcon.textContent = q.icon || '🧐';
-        qText.textContent = q.question;
-
-        optionsContainer.innerHTML = '';
-        q.options.forEach((opt, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerHTML = `
-                <span class="opt-icon">${opt.icon || '📌'}</span>
-                <span class="opt-label">${opt.label}</span>
-                <span class="opt-speak" data-opt-text="${opt.label}">🔊</span>
-            `;
-            btn.dataset.index = index;
-            
-            const speakBtn = btn.querySelector('.opt-speak');
-            speakBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                speakText(speakBtn.dataset.optText);
-                playSound('click');
+            reloadBtn.addEventListener('click', function() {
+                location.reload();
             });
 
-            btn.addEventListener('click', () => handleAnswer(index));
-            optionsContainer.appendChild(btn);
-        });
+            introOverlay.classList.add('show');
+            victoryOverlay.classList.remove('show');
+            menuOverlay.classList.remove('show');
+            gamePaused = true;
+            loadLevel(0);
 
-        feedbackArea.style.display = 'flex';
-        updateMascot('think');
-        fbFact.textContent = '';
-        btnNext.classList.remove('show');
-        btnNext.style.display = 'none';
-        isAnswering = false;
-        animating = false;
+            // --- ОСТАЛЬНЫЕ СОБЫТИЯ (без изменений) ---
 
-        speakText(q.question);
-    }
+            canvas.addEventListener('click', function(e) {
+                if (editorMode) {
+                    handleEditorClick(e);
+                    return;
+                }
+                if (gameOver || dashAnim || gamePaused || !gameStarted) return;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mx = (e.clientX - rect.left) * scaleX;
+                const my = (e.clientY - rect.top) * scaleY;
+                const size = CELL_SIZE_GAME;
+                let offsetX = playerCol * size - canvas.width/2 + size/2;
+                let offsetY = playerRow * size - canvas.height/2 + size/2;
+                offsetX = Math.min(offsetX, MAP_COLS * size - canvas.width);
+                offsetX = Math.max(offsetX, 0);
+                offsetY = Math.min(offsetY, MAP_ROWS * size - canvas.height);
+                offsetY = Math.max(offsetY, 0);
+                const col = Math.floor((mx + offsetX) / size);
+                const row = Math.floor((my + offsetY) / size);
+                if (row < 0 || row >= MAP_ROWS || col < 0 || col >= MAP_COLS) return;
+                if (validTargets.some(t => t.r === row && t.c === col)) moveTo(row, col);
+            });
 
-    function getQuestion(id) {
-        return QUESTION_BANK.find(q => q.id === id);
-    }
+            canvas.addEventListener('mousemove', function(e) {
+                if (editorMode || dashAnim || gamePaused || !gameStarted) return;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mx = (e.clientX - rect.left) * scaleX;
+                const my = (e.clientY - rect.top) * scaleY;
+                const size = CELL_SIZE_GAME;
+                let offsetX = playerCol * size - canvas.width/2 + size/2;
+                let offsetY = playerRow * size - canvas.height/2 + size/2;
+                offsetX = Math.min(offsetX, MAP_COLS * size - canvas.width);
+                offsetX = Math.max(offsetX, 0);
+                offsetY = Math.min(offsetY, MAP_ROWS * size - canvas.height);
+                offsetY = Math.max(offsetY, 0);
+                const col = Math.floor((mx + offsetX) / size);
+                const row = Math.floor((my + offsetY) / size);
+                if (row < 0 || row >= MAP_ROWS || col < 0 || col >= MAP_COLS) {
+                    hoverRow = -1; hoverCol = -1;
+                    render();
+                    return;
+                }
+                hoverRow = row; hoverCol = col;
+                render();
+            });
+            canvas.addEventListener('mouseleave', () => { hoverRow = -1; hoverCol = -1; render(); });
 
-    function updateDots() {
-        const total = 7;
-        const done = 7 - sessionQueue.length;
-        progressDots.innerHTML = '';
-        for (let i = 0; i < total; i++) {
-            const dot = document.createElement('span');
-            dot.className = 'dot';
-            if (i < done) dot.classList.add('done');
-            else if (i === done && sessionQueue.length > 0) dot.classList.add('current');
-            progressDots.appendChild(dot);
-        }
-    }
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                if (!touch) return;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mx = (touch.clientX - rect.left) * scaleX;
+                const my = (touch.clientY - rect.top) * scaleY;
 
-    // ============================================================
-    //  ANSWER HANDLING
-    // ============================================================
-    function handleAnswer(selectedIndex) {
-        if (isAnswering || animating) return;
-        if (sessionQueue.length === 0) return;
+                if (editorMode) {
+                    handleEditorClick({ clientX: touch.clientX, clientY: touch.clientY });
+                    return;
+                }
+                if (gameOver || dashAnim || gamePaused || !gameStarted) return;
+                const size = CELL_SIZE_GAME;
+                let offsetX = playerCol * size - canvas.width/2 + size/2;
+                let offsetY = playerRow * size - canvas.height/2 + size/2;
+                offsetX = Math.min(offsetX, MAP_COLS * size - canvas.width);
+                offsetX = Math.max(offsetX, 0);
+                offsetY = Math.min(offsetY, MAP_ROWS * size - canvas.height);
+                offsetY = Math.max(offsetY, 0);
+                const col = Math.floor((mx + offsetX) / size);
+                const row = Math.floor((my + offsetY) / size);
+                if (row < 0 || row >= MAP_ROWS || col < 0 || col >= MAP_COLS) return;
+                if (validTargets.some(t => t.r === row && t.c === col)) moveTo(row, col);
+            }, { passive: false });
 
-        optionsContainer.classList.add('disabled');
+            menuBtn.addEventListener('click', toggleMenu);
+            menuCloseBtn.addEventListener('click', closeMenu);
+            menuEditorBtn.addEventListener('click', toggleEditor);
+            menuOverlay.addEventListener('click', function(e) { if (e.target === this) closeMenu(); });
 
-        isAnswering = true;
-        const id = sessionQueue[0];
-        const q = getQuestion(id);
-        const progress = getProgress(id);
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.dataset.tool === 'clear') {
+                        currentTool = 'clear';
+                        handleEditorClick({ clientX: 0, clientY: 0 });
+                        return;
+                    }
+                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTool = this.dataset.tool;
+                });
+            });
+            exportBtn.addEventListener('click', exportLevel);
+            importBtn.addEventListener('click', importLevel);
+            loadFromGameBtn.addEventListener('click', loadFromGame);
+            closeEditorBtn.addEventListener('click', toggleEditor);
 
-        const buttons = optionsContainer.querySelectorAll('.option-btn');
-        buttons.forEach((btn, idx) => {
-            btn.classList.add('disabled');
-            if (idx === q.correctIndex) btn.classList.add('reveal-correct');
-        });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && menuOpen) closeMenu();
+                if (e.key === 'Escape' && editorMode) toggleEditor();
+            });
 
-        const isCorrect = (selectedIndex === q.correctIndex);
+            updateTimerCircle();
+            requestAnimationFrame(function updateAnim(time) {
+                const dt = Math.min((time - lastTime) / 1000, 0.05);
+                lastTime = time;
+                for (let i = bloodEffects.length - 1; i >= 0; i--) {
+                    if (!bloodEffects[i].update(dt)) {
+                        bloodEffects.splice(i, 1);
+                    }
+                }
+                for (let i = bloodPuddles.length - 1; i >= 0; i--) {
+                    bloodPuddles[i].life -= dt;
+                    if (bloodPuddles[i].life <= 0) bloodPuddles.splice(i, 1);
+                }
+                if (slowMo) {
+                    slowMoTimer -= dt;
+                    if (slowMoTimer <= 0) slowMo = false;
+                }
+                if (dashAnim) {
+                    const speed = slowMo ? 0.05 : 0.22;
+                    dashAnim.progress += speed;
+                    if (dashAnim.progress >= 1) {
+                        dashAnim.progress = 1;
+                        const target = dashAnim.target;
+                        dashAnim = null;
+                        slowMo = false;
+                        completeDash(target);
+                    }
+                    render();
+                } else if (!dashAnim && !gameOver) {
+                    render();
+                }
+                requestAnimationFrame(updateAnim);
+            });
 
-        if (isCorrect) {
-            playSound('correct');
-            buttons[selectedIndex].classList.add('correct');
-            fbFact.textContent = q.funFact;
-            updateMascot('win');
-            fireConfetti(40);
-
-            speakSequence(['Молодец!', q.funFact]);
-
-            questionArea.classList.add('slide-up');
-
-            btnNext.style.display = 'block';
-            btnNext.classList.add('show');
-            btnNext.style.pointerEvents = 'none';
-            setTimeout(() => {
-                btnNext.style.pointerEvents = 'auto';
-            }, 500);
-
-            let newBox = progress.box;
-            if (newBox === 1) newBox = 2;
-            else if (newBox === 2) newBox = 3;
-            else if (newBox === 3) {
-                progress.successCount = (progress.successCount || 0) + 1;
-            }
-            const days = newBox === 2 ? 2 : (newBox === 3 ? 7 : 0);
-            const nextReview = Date.now() + days * 24 * 60 * 60 * 1000;
-            updateProgress(id, newBox, nextReview);
-
-            addNut();
-            correctCountInSession++;
-
-            sessionQueue.shift();
-
-        } else {
-            playSound('wrong');
-            buttons[selectedIndex].classList.add('wrong');
-            fbFact.textContent = 'Не беда! Давай запомним правильный ответ.';
-            speakText('Не беда! Давай запомним правильный ответ.');
-            updateMascot('think');
-            if (navigator.vibrate) navigator.vibrate(30);
-
-            resetToBox1(id);
-
-            sessionQueue.shift();
-            if (sessionQueue.length > 0) {
-                sessionQueue.push(id);
-            }
-
-            questionArea.classList.add('slide-up');
-
-            btnNext.style.display = 'block';
-            btnNext.classList.add('show');
-            btnNext.style.pointerEvents = 'none';
-            setTimeout(() => {
-                btnNext.style.pointerEvents = 'auto';
-            }, 500);
-        }
-
-        btnNext.onclick = () => {
-            playSound('click');
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
-            if (sessionQueue.length === 0) {
-                finishSession();
-            } else {
-                renderQuestion();
-            }
-        };
-    }
-
-    // ============================================================
-    //  FINISH SESSION
-    // ============================================================
-    function finishSession() {
-        playSound('complete');
-        fireConfetti(100);
-
-        gameScreen.classList.remove('active');
-        resultScreen.classList.add('active');
-
-        resultNuts.textContent = sessionNutsEarned;
-        resultStats.textContent = `Ты правильно ответил на ${correctCountInSession} из 7 вопросов!`;
-
-        if (correctCountInSession === 7) {
-            perfectBadge.style.display = 'block';
-        } else {
-            perfectBadge.style.display = 'none';
-        }
-
-        resultScreen.classList.add('bounce-in');
-        setTimeout(() => {
-            resultScreen.classList.remove('bounce-in');
-        }, 700);
-
-        for (let i = 0; i < 20; i++) {
-            setTimeout(() => {
-                const nut = document.createElement('div');
-                nut.className = 'nut-firework';
-                nut.textContent = '🥜';
-                const x = 40 + Math.random() * 20;
-                const y = 20 + Math.random() * 60;
-                const tx = (Math.random() - 0.5) * 300;
-                const ty = (Math.random() - 0.5) * 300;
-                nut.style.left = x + '%';
-                nut.style.top = y + '%';
-                nut.style.setProperty('--tx', tx + 'px');
-                nut.style.setProperty('--ty', ty + 'px');
-                nut.style.fontSize = (1.5 + Math.random() * 2) + 'rem';
-                document.body.appendChild(nut);
-                setTimeout(() => nut.remove(), 1500);
-            }, i * 80);
-        }
-
-        speakText('Отлично! Ты молодец!');
-        updateMascot('win');
-        const resultIcon = document.querySelector('.result-icon');
-        if (resultIcon) {
-            resultIcon.className = 'result-icon';
-            resultIcon.classList.add('celebrate');
-        }
-
-        // Обновляем открытые темы
-        refreshUnlockedThemes();
-
-        sessionNutsEarned = 0;
-        updateNutDisplay();
-
-        if (isForestMode) {
-            isForestMode = false;
-            forestCategoryId = null;
-            setTimeout(() => {
-                resultScreen.classList.remove('active');
-                forestScreen.classList.add('active');
-                updateMascot('idle');
-            }, 3000);
-        }
-    }
-
-    function getProgress(id) {
-        return appData.progress[id];
-    }
-
-    function updateProgress(id, newBox, newNextReview) {
-        const p = appData.progress[id];
-        p.box = newBox;
-        p.nextReview = newNextReview;
-        p.lastSeen = Date.now();
-        if (newBox === 3) p.successCount = (p.successCount || 0) + 1;
-        saveStorage(appData);
-    }
-
-    function resetToBox1(id) {
-        const p = appData.progress[id];
-        p.box = 1;
-        p.nextReview = 0;
-        p.lastSeen = Date.now();
-        saveStorage(appData);
-    }
-
-    function addNut() {
-        if (typeof appData.nuts !== 'number' || isNaN(appData.nuts)) appData.nuts = 0;
-        appData.nuts++;
-        sessionNutsEarned++;
-        saveStorage(appData);
-        updateNutDisplay();
-        nutIcon.classList.remove('nut-pop');
-        void nutIcon.offsetWidth;
-        nutIcon.classList.add('nut-pop');
-        setTimeout(() => {
-            nutIcon.classList.remove('nut-pop');
-        }, 500);
-    }
-
-    function updateNutDisplay() {
-        const nuts = isNaN(appData.nuts) ? 0 : appData.nuts;
-        nutsCount.textContent = nuts;
-    }
-
-    function refreshAllMascots() {
-        updateMascot(currentMascotState);
-    }
-
-    // ============================================================
-    //  START SESSION
-    // ============================================================
-    function startSession(allowedCategoryIds, limit) {
-        playSound('click');
-        let categoryIds = allowedCategoryIds;
-        if (!categoryIds) {
-            const unlocked = getUnlockedCategoryIds();
-            if (unlocked.length > 0) {
-                categoryIds = unlocked;
-            } else {
-                // Если ни одна тема не открыта, используем только первую тему (animals) для старта
-                categoryIds = ['animals'];
-            }
-        }
-        // Если limit не передан, определяем: если открыто 0 тем, то 5 вопросов, иначе 7
-        if (limit === undefined) {
-            const unlocked = getUnlockedCategoryIds();
-            if (unlocked.length === 0) {
-                limit = 5;
-            } else {
-                limit = 7;
-            }
-        }
-        sessionQueue = buildSession(categoryIds, limit);
-        correctCountInSession = 0;
-        sessionNutsEarned = 0;
-        isAnswering = false;
-        animating = false;
-
-        mainScreen.classList.remove('active');
-        gameScreen.classList.add('active');
-        resultScreen.classList.remove('active');
-        forestScreen.classList.remove('active');
-
-        renderQuestion();
-        updateNutDisplay();
-    }
-
-    // ============================================================
-    //  SCREEN SWITCHING
-    // ============================================================
-    function showMainScreen() {
-        mainScreen.classList.add('active');
-        gameScreen.classList.remove('active');
-        resultScreen.classList.remove('active');
-        forestScreen.classList.remove('active');
-        updateNutDisplay();
-        refreshAllMascots();
-        updateMascot('idle');
-        isForestMode = false;
-    }
-
-    function showForestScreen() {
-        mainScreen.classList.remove('active');
-        gameScreen.classList.remove('active');
-        resultScreen.classList.remove('active');
-        forestScreen.classList.add('active');
-        renderForest();
-        updateNutDisplay();
-        refreshAllMascots();
-        updateMascot('idle');
-        const container = document.getElementById('forestContainer');
-        if (container) container.scrollTop = 0;
-    }
-
-    // ============================================================
-    //  EVENT LISTENERS
-    // ============================================================
-    btnStart.addEventListener('click', () => {
-        isForestMode = false;
-        startSession(null);
-    });
-
-    btnForest.addEventListener('click', () => {
-        playSound('click');
-        showForestScreen();
-    });
-
-    btnHome.addEventListener('click', () => {
-        playSound('click');
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-        }
-        sessionQueue = [];
-        showMainScreen();
-    });
-
-    backFromForest.addEventListener('click', () => {
-        playSound('click');
-        showMainScreen();
-    });
-
-    btnTts.addEventListener('click', () => {
-        if (currentQuestionId) {
-            const q = getQuestion(currentQuestionId);
-            if (q) {
-                speakText(q.question);
-                playSound('click');
-            }
-        }
-    });
-
-    // Инициализация
-    updateNutDisplay();
-    refreshAllMascots();
-    updateMascot('idle');
-    console.log('🐿️ Nutcracker – исправлено: при первом запуске 5 простых вопросов, темы открываются последовательно, скролл работает!');
-</script>
+            console.log('🦇 VampStep — первый уровень обновлён по вашему JSON.');
+        })();
+    </script>
 </body>
 </html>
